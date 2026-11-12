@@ -1,5 +1,6 @@
 package com.mahghuuuls.ashenskills.runtime;
 
+import com.mahghuuuls.ashenskills.combat.SkillDamage;
 import com.mahghuuuls.ashenskills.network.AshenNetwork;
 import com.mahghuuuls.ashenskills.network.SkillInputMessage;
 import net.minecraft.entity.Entity;
@@ -10,6 +11,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingKnockBackEvent;
+import net.minecraftforge.event.entity.living.LootingLevelEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -106,6 +108,12 @@ public final class SkillRuntimeHooks implements SkillInputMessage.Receiver {
 
     private static boolean isAttackBlocked(EntityPlayer player) {
         return !player.world.isRemote && runtime.blocksAttack(player);
+    }
+
+    /** A kill made by a skill that does not use Looting drops as if the weapon had none. */
+    @SubscribeEvent
+    public void onLootingLevel(LootingLevelEvent event) {
+        event.setLootingLevel(SkillDamage.lootingLevelFor(event.getEntityLiving(), event.getLootingLevel()));
     }
 
     @SubscribeEvent

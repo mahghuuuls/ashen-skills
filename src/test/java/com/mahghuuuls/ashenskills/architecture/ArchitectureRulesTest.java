@@ -113,6 +113,10 @@ class ArchitectureRulesTest {
         assertBroken(ROOT + ".weapon", ROOT + ".runtime.SkillRuntime");
         assertBroken(ROOT + ".attribute", ROOT + ".network.AshenNetwork");
         assertBroken(ROOT + ".weapon.types", ROOT + ".ashenforge.ForgeTile");
+        assertBroken(ROOT + ".combat.math", ROOT + ".runtime.SkillRuntime");
+        assertBroken(ROOT + ".combat.math", "net.minecraft.entity.Entity");
+        assertAllowed(ROOT + ".combat.math", "java.util.List");
+        assertAllowed(ROOT + ".combat", "net.minecraft.entity.Entity");
         assertAllowed(ROOT + ".runtime", ROOT + ".weapon.SkillTag");
         assertAllowed(ROOT + ".weapon", ROOT + ".config.Settings");
     }

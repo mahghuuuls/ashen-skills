@@ -144,7 +144,9 @@
     "itemUseDuringRecovery": false,
     "jumpDuringExecution": false,
     "solidBlocksObstruct": true,
-    "source": "brief 7.10, 5.28; the rest are proposals"
+    "reachBelow": 1.0,
+    "reachAbove": 3.0,
+    "source": "brief 7.10, 5.28; the rest are proposals. reachBelow and reachAbove (blocks below and above the user's feet that a strike reaches) were added in Implementation"
   },
   "builtInWeaponTypes": {
     "_about": "Type ids the mod knows without pack configuration. 'sword' covers the five vanilla swords by registry name; 'vanillaItemTypes' lists them. The others are Spartan Weaponry melee categories, assigned only when Spartan Weaponry is installed. Ranged and thrown Spartan weapons get no built-in type.",

@@ -14,12 +14,17 @@ public final class SkillSession {
     private final SessionTimeline timeline;
     private final int hotbarSlot;
     private final Item weaponItem;
+    private final float facingYaw;
+    private final HitSchedule hitSchedule;
 
-    SkillSession(UUID playerId, SkillDefinition skill, int hotbarSlot, Item weaponItem) {
+    SkillSession(
+            UUID playerId, SkillDefinition skill, int hotbarSlot, Item weaponItem, float facingYaw, int hitWindowCap) {
         this.playerId = playerId;
         this.skill = skill;
         this.hotbarSlot = hotbarSlot;
         this.weaponItem = weaponItem;
+        this.facingYaw = facingYaw;
+        this.hitSchedule = new HitSchedule(skill.hitWindowSeconds(), hitWindowCap);
         this.timeline = new SessionTimeline(
                 skill.number(SkillNumber.EXECUTION_LENGTH),
                 skill.number(SkillNumber.RECOVERY),
@@ -56,6 +61,15 @@ public final class SkillSession {
 
     Item weaponItem() {
         return weaponItem;
+    }
+
+    /** The direction the player faced when the skill executed; strikes keep it. */
+    float facingYaw() {
+        return facingYaw;
+    }
+
+    HitSchedule hitSchedule() {
+        return hitSchedule;
     }
 
     /** Movement speed in the current phase, as a fraction of normal speed. */

@@ -1,11 +1,15 @@
 package com.mahghuuuls.ashenskills.runtime;
 
+import com.mahghuuuls.ashenskills.api.SkillBehavior;
 import com.mahghuuuls.ashenskills.api.SkillDefinition;
 import com.mahghuuuls.ashenskills.api.SkillFlag;
 import com.mahghuuuls.ashenskills.api.SkillNumber;
 import com.mahghuuuls.ashenskills.api.SkillPhase;
+import com.mahghuuuls.ashenskills.config.SettingKey;
+import com.mahghuuuls.ashenskills.config.Settings;
 import com.mahghuuuls.ashenskills.diagnostics.Diagnostics;
 import com.mahghuuuls.ashenskills.runtime.SessionTimeline.Step;
+import com.mahghuuuls.ashenskills.skill.SkillRegistry;
 import com.mahghuuuls.ashenskills.weapon.AttachedSkill;
 import com.mahghuuuls.ashenskills.weapon.SkillTag;
 import java.util.ArrayList;
@@ -76,7 +80,9 @@ public final class SkillRuntime {
     private void commit(EntityPlayerMP player, SkillDefinition skill, ItemStack weapon) {
         long cooldownMillis = Math.round(skill.number(SkillNumber.COOLDOWN) * 1000);
         cooldowns.start(player, cooldownMillis);
-        SkillSession session = new SkillSession(player.getUniqueID(), skill, player.inventory.currentItem, weapon.getItem());
+        SkillSession session = new SkillSession(
+                player.getUniqueID(), skill, player.inventory.currentItem, weapon.getItem(), player.rotationYaw,
+                Settings.general().getInt(SettingKey.HIT_WINDOW_CAP_PER_ACTIVATION));
         sessions.put(player.getUniqueID(), session);
         applySpeed(player, session.speedFraction());
         ActionLock.stopForbiddenUse(session, player);
@@ -107,12 +113,35 @@ public final class SkillRuntime {
                     interrupt(player, cause);
                 }
             }
+            boolean wasExecuting = session.phase() == SkillPhase.EXECUTION;
             Step step = session.timeline().tick();
+            if (wasExecuting) {
+                // A window due exactly at the end of execution still opens: the execution completed.
+                openDueHitWindows(player, session);
+            }
+            if (sessions.get(session.playerId()) != session) {
+                // The hit itself ended this skill use (for example the user died of thorns).
+                continue;
+            }
             if (step == Step.EXECUTION_ENDED) {
                 enteredPhase(player, session, "executionCompleted");
             } else if (step == Step.FINISHED) {
                 end(session, player, "completed");
             }
+        }
+    }
+
+    /** Opens every window whose time has come. Stops when a hit ends or interrupts the skill use. */
+    private void openDueHitWindows(EntityPlayerMP player, SkillSession session) {
+        SkillBehavior behavior = SkillRegistry.behaviorOf(session.skill().id());
+        if (behavior == null) {
+            return;
+        }
+        int window;
+        while (sessions.get(session.playerId()) == session
+                && session.phase() != SkillPhase.INTERRUPTED_RECOVERY
+                && (window = session.hitSchedule().nextDue(session.timeline().executionTicksElapsed())) >= 0) {
+            behavior.onHitWindow(new RuntimeSkillContext(player, session), window);
         }
     }
 

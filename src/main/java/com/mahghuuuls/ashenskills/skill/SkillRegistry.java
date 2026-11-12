@@ -1,5 +1,6 @@
 package com.mahghuuuls.ashenskills.skill;
 
+import com.mahghuuuls.ashenskills.api.SkillBehavior;
 import com.mahghuuuls.ashenskills.api.SkillDefinition;
 import java.util.Collection;
 import java.util.Collections;
@@ -14,13 +15,17 @@ import net.minecraft.util.ResourceLocation;
 public final class SkillRegistry {
 
     private static final Map<ResourceLocation, SkillDefinition> SKILLS = new LinkedHashMap<>();
+    private static final Map<ResourceLocation, SkillBehavior> BEHAVIORS = new LinkedHashMap<>();
     private static boolean closed;
 
     private SkillRegistry() {
     }
 
     /** @throws IllegalStateException when loading is over, the id is taken, or the skill is incomplete */
-    public static void register(SkillDefinition definition) {
+    public static void register(SkillDefinition definition, SkillBehavior behavior) {
+        if (behavior == null) {
+            throw new IllegalArgumentException("Skill " + definition.id() + " needs a behavior");
+        }
         if (closed) {
             throw new IllegalStateException(
                     "Skill " + definition.id() + " was registered too late; register skills before the game finishes loading");
@@ -32,6 +37,7 @@ public final class SkillRegistry {
             throw new IllegalStateException("A skill with id " + definition.id() + " is already registered");
         }
         SKILLS.put(definition.id(), definition);
+        BEHAVIORS.put(definition.id(), behavior);
     }
 
     /** Ends registration. Called once, when the game has finished loading mods. */
@@ -42,6 +48,11 @@ public final class SkillRegistry {
     /** The skill with that id, or null when no installed mod registered it. */
     public static SkillDefinition get(ResourceLocation id) {
         return SKILLS.get(id);
+    }
+
+    /** What the skill with that id does, or null when no installed mod registered it. */
+    public static SkillBehavior behaviorOf(ResourceLocation id) {
+        return BEHAVIORS.get(id);
     }
 
     public static Collection<SkillDefinition> all() {

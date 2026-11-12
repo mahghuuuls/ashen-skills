@@ -10,9 +10,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -73,8 +75,11 @@ public final class DefaultsData {
         if (!skills.has(name)) {
             throw new IllegalArgumentException("Defaults file has no skill '" + name + "'");
         }
-        JsonObject common = root.has("commonSkillRules") ? root.getAsJsonObject("commonSkillRules") : new JsonObject();
-        return new SkillEntry(skills.getAsJsonObject(name), common);
+        return new SkillEntry(skills.getAsJsonObject(name), section("commonSkillRules"), section("enchantmentDefaults"));
+    }
+
+    private JsonObject section(String name) {
+        return root.has(name) ? root.getAsJsonObject(name) : new JsonObject();
     }
 
     /** Item registry name to the weapon types that item has without any pack configuration. */
@@ -96,26 +101,24 @@ public final class DefaultsData {
     }
 
     /**
-     * One skill as the defaults file states it. A rule the skill does not state itself is taken
-     * from the file's rules common to all skills.
+     * One skill as the defaults file states it. A value the skill does not state itself is taken
+     * from the file's rules common to all skills, and then from its enchantment defaults.
      */
     public static final class SkillEntry {
 
-        private final JsonObject own;
-        private final JsonObject common;
+        private final JsonObject[] sources;
 
-        SkillEntry(JsonObject own, JsonObject common) {
-            this.own = own;
-            this.common = common;
+        SkillEntry(JsonObject own, JsonObject common, JsonObject enchantmentDefaults) {
+            this.sources = new JsonObject[] {own, common, enchantmentDefaults};
         }
 
         /** "instant", "stance" or "charged". */
         public String activation() {
-            return own.get("activation").getAsString();
+            return sources[0].get("activation").getAsString();
         }
 
         public Set<String> weaponTypes() {
-            return strings(own.getAsJsonArray("weaponTypes"));
+            return strings(sources[0].getAsJsonArray("weaponTypes"));
         }
 
         /** The player states in which the skill may start; empty when the file states none. */
@@ -136,11 +139,25 @@ public final class DefaultsData {
             return value == null ? null : value.getAsBoolean();
         }
 
-        private JsonElement find(String name) {
-            if (own.has(name)) {
-                return own.get(name);
+        /** When each hit window opens, in seconds from the start of execution; empty when none. */
+        public List<Double> hitWindowSeconds() {
+            List<Double> seconds = new ArrayList<>();
+            JsonElement windows = find("hitWindows");
+            if (windows != null) {
+                for (JsonElement window : windows.getAsJsonArray()) {
+                    seconds.add(window.getAsJsonObject().get("at").getAsDouble());
+                }
             }
-            return common.has(name) ? common.get(name) : null;
+            return seconds;
+        }
+
+        private JsonElement find(String name) {
+            for (JsonObject source : sources) {
+                if (source.has(name)) {
+                    return source.get(name);
+                }
+            }
+            return null;
         }
     }
 

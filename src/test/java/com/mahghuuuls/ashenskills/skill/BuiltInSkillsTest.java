@@ -81,6 +81,19 @@ class BuiltInSkillsTest {
         SkillDefinition slash = BuiltInSkills.definitionOf("powerful_slash", DefaultsData.loadBundled());
 
         assertEquals(java.util.Collections.emptyList(), slash.missingValues());
+        assertEquals(java.util.Arrays.asList(0.30), slash.hitWindowSeconds());
+        assertEquals(1.8, slash.number(SkillNumber.DAMAGE_MULTIPLIER));
+        assertEquals(3.5, slash.number(SkillNumber.REACH));
+        assertEquals(110.0, slash.number(SkillNumber.ARC));
+        assertEquals(0.6, slash.number(SkillNumber.KNOCKBACK_STRENGTH));
+        assertEquals(1.0, slash.number(SkillNumber.REACH_BELOW));
+        assertEquals(3.0, slash.number(SkillNumber.REACH_ABOVE));
+        assertEquals(true, slash.flag(SkillFlag.DAMAGE_ENCHANTMENTS));
+        assertEquals(true, slash.flag(SkillFlag.FIRE_ASPECT));
+        assertEquals(false, slash.flag(SkillFlag.KNOCKBACK_ENCHANTMENT));
+        assertEquals(true, slash.flag(SkillFlag.LOOTING));
+        assertEquals(true, slash.flag(SkillFlag.SOLID_BLOCKS_OBSTRUCT));
+        assertThrows(IllegalStateException.class, () -> slash.number(SkillNumber.WIDTH));
         assertEquals(set("grounded"), slash.allowedStates());
         assertEquals(false, slash.flag(SkillFlag.MOUNTED_ALLOWED));
     }

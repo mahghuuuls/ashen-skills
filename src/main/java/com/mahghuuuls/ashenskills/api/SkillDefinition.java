@@ -26,6 +26,7 @@ public final class SkillDefinition {
     private final ActivationKind activation;
     private final Set<String> weaponTypes;
     private final Set<String> allowedStates;
+    private final List<Double> hitWindowSeconds;
     private final Map<SkillNumber, Double> numbers;
     private final Map<SkillFlag, Boolean> flags;
 
@@ -34,6 +35,7 @@ public final class SkillDefinition {
         this.activation = builder.activation;
         this.weaponTypes = Collections.unmodifiableSet(new LinkedHashSet<>(builder.weaponTypes));
         this.allowedStates = Collections.unmodifiableSet(new LinkedHashSet<>(builder.allowedStates));
+        this.hitWindowSeconds = Collections.unmodifiableList(new ArrayList<>(builder.hitWindowSeconds));
         this.numbers = new EnumMap<>(builder.numbers);
         this.flags = new EnumMap<>(builder.flags);
     }
@@ -64,6 +66,11 @@ public final class SkillDefinition {
         return allowedStates;
     }
 
+    /** When each hit window opens, in seconds from the start of execution. May be empty. */
+    public List<Double> hitWindowSeconds() {
+        return hitWindowSeconds;
+    }
+
     /** @throws IllegalStateException when the skill was built without this value */
     public double number(SkillNumber key) {
         Double value = numbers.get(key);
@@ -82,11 +89,14 @@ public final class SkillDefinition {
         return value;
     }
 
-    /** Configuration names of the numbers and rules this skill still lacks. Empty when complete. */
+    /**
+     * Configuration names of the required numbers and rules this skill still lacks. Empty when
+     * complete.
+     */
     public List<String> missingValues() {
         List<String> missing = new ArrayList<>();
         for (SkillNumber key : SkillNumber.values()) {
-            if (!numbers.containsKey(key)) {
+            if (key.isRequiredForEverySkill() && !numbers.containsKey(key)) {
                 missing.add(key.configName());
             }
         }
@@ -98,13 +108,17 @@ public final class SkillDefinition {
         return missing;
     }
 
-    /** Collects the parts of a skill. Every {@link SkillNumber} and {@link SkillFlag} must be set. */
+    /**
+     * Collects the parts of a skill. Every {@link SkillFlag} and every {@link SkillNumber} that is
+     * required for every skill must be set.
+     */
     public static final class Builder {
 
         private final ResourceLocation id;
         private final ActivationKind activation;
         private final Set<String> weaponTypes = new LinkedHashSet<>();
         private final Set<String> allowedStates = new LinkedHashSet<>();
+        private final List<Double> hitWindowSeconds = new ArrayList<>();
         private final Map<SkillNumber, Double> numbers = new EnumMap<>(SkillNumber.class);
         private final Map<SkillFlag, Boolean> flags = new EnumMap<>(SkillFlag.class);
 
@@ -120,6 +134,12 @@ public final class SkillDefinition {
 
         public Builder allowedStates(Set<String> states) {
             allowedStates.addAll(states);
+            return this;
+        }
+
+        /** When each hit window opens, in seconds from the start of execution. */
+        public Builder hitWindows(List<Double> seconds) {
+            hitWindowSeconds.addAll(seconds);
             return this;
         }
 

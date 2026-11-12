@@ -26,6 +26,7 @@ final class SessionTimeline {
 
     private SkillPhase phase = SkillPhase.EXECUTION;
     private int ticksInPhase;
+    private int executionTicksElapsed;
     private boolean startsCountingNextTick;
 
     SessionTimeline(double executionSeconds, double recoverySeconds, double interruptedRecoverySeconds) {
@@ -47,6 +48,11 @@ final class SessionTimeline {
         return ticksInPhase;
     }
 
+    /** Ticks of execution that have run so far; stays at its last value after execution ends. */
+    int executionTicksElapsed() {
+        return executionTicksElapsed;
+    }
+
     int phaseLengthTicks() {
         switch (phase) {
             case EXECUTION:
@@ -64,6 +70,9 @@ final class SessionTimeline {
             return Step.CONTINUE;
         }
         ticksInPhase++;
+        if (phase == SkillPhase.EXECUTION) {
+            executionTicksElapsed++;
+        }
         if (ticksInPhase < phaseLengthTicks()) {
             return Step.CONTINUE;
         }

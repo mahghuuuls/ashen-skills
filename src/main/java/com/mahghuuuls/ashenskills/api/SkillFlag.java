@@ -16,7 +16,17 @@ public enum SkillFlag {
     /** Whether the player may raise a shield during recovery. */
     BLOCKING_DURING_RECOVERY("blockingDuringRecovery"),
     /** Whether the player may use items during recovery. */
-    ITEM_USE_DURING_RECOVERY("itemUseDuringRecovery");
+    ITEM_USE_DURING_RECOVERY("itemUseDuringRecovery"),
+    /** Whether solid blocks between the user and a target shield that target. */
+    SOLID_BLOCKS_OBSTRUCT("solidBlocksObstruct"),
+    /** Whether the weapon's damage enchantments (Sharpness, Smite, Bane of Arthropods) add to a hit. */
+    DAMAGE_ENCHANTMENTS("damageEnchantments"),
+    /** Whether Fire Aspect on the weapon sets hit targets on fire. */
+    FIRE_ASPECT("fireAspect"),
+    /** Whether the Knockback enchantment adds to the skill's own push. */
+    KNOCKBACK_ENCHANTMENT("knockback"),
+    /** Whether Looting on the weapon counts for kills made by the skill. */
+    LOOTING("looting");
 
     private final String configName;
 

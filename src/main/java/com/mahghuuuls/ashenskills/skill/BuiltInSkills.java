@@ -2,25 +2,33 @@ package com.mahghuuuls.ashenskills.skill;
 
 import com.mahghuuuls.ashenskills.Tags;
 import com.mahghuuuls.ashenskills.api.ActivationKind;
+import com.mahghuuuls.ashenskills.api.SkillBehavior;
 import com.mahghuuuls.ashenskills.api.SkillDefinition;
 import com.mahghuuuls.ashenskills.api.SkillFlag;
 import com.mahghuuuls.ashenskills.api.SkillNumber;
 import com.mahghuuuls.ashenskills.config.DefaultsData;
 import com.mahghuuuls.ashenskills.config.DefaultsData.SkillEntry;
+import com.mahghuuuls.ashenskills.skill.builtin.PowerfulSlash;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import net.minecraft.util.ResourceLocation;
 
 /** The skills this mod ships. Their values come from the bundled defaults file. */
 public final class BuiltInSkills {
 
-    /** Names in the defaults file of the skills that are implemented so far. */
-    private static final String[] IMPLEMENTED = {"powerful_slash"};
+    /** The skills that are implemented so far, by their name in the defaults file. */
+    private static final Map<String, SkillBehavior> IMPLEMENTED = new LinkedHashMap<>();
+
+    static {
+        IMPLEMENTED.put("powerful_slash", new PowerfulSlash());
+    }
 
     private BuiltInSkills() {
     }
 
     public static void registerAll(DefaultsData defaults) {
-        for (String name : IMPLEMENTED) {
-            SkillRegistry.register(definitionOf(name, defaults));
+        for (Map.Entry<String, SkillBehavior> skill : IMPLEMENTED.entrySet()) {
+            SkillRegistry.register(definitionOf(skill.getKey(), defaults), skill.getValue());
         }
     }
 
@@ -30,7 +38,8 @@ public final class BuiltInSkills {
         SkillDefinition.Builder builder = SkillDefinition
                 .builder(new ResourceLocation(Tags.MOD_ID, name), ActivationKind.fromConfigName(entry.activation()))
                 .weaponTypes(entry.weaponTypes())
-                .allowedStates(entry.allowedStartStates());
+                .allowedStates(entry.allowedStartStates())
+                .hitWindows(entry.hitWindowSeconds());
         for (SkillNumber key : SkillNumber.values()) {
             Double value = entry.number(key.configName());
             if (value != null) {

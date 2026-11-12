@@ -48,6 +48,24 @@ class SessionTimelineTest {
     }
 
     @Test
+    void executionTicksAreCountedThroughTheLastOneAndNoFurther() {
+        SessionTimeline timeline = timeline();
+        assertEquals(0, timeline.executionTicksElapsed());
+        timeline.tick();
+        assertEquals(1, timeline.executionTicksElapsed());
+
+        for (int tick = 2; tick <= 9; tick++) {
+            assertEquals(Step.CONTINUE, timeline.tick());
+        }
+        assertEquals(Step.EXECUTION_ENDED, timeline.tick());
+        assertEquals(10, timeline.executionTicksElapsed());
+
+        timeline.tick();
+        timeline.tick();
+        assertEquals(10, timeline.executionTicksElapsed());
+    }
+
+    @Test
     void anInterruptedExecutionGoesToTheShorterInterruptedRecovery() {
         SessionTimeline timeline = timeline();
         timeline.tick();
