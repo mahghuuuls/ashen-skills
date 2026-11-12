@@ -12,7 +12,7 @@ import net.minecraft.util.EnumHandSide;
 /**
  * Turns the weapon inside the hand as a clip's item bone says. The game always holds an item at a
  * right angle to the arm; a clip can lay it in line with the arm, or flat for a side slash. The
- * turn is made around the grip, so the handle stays in the fist.
+ * turn is made around the middle of the fist, so the handle stays in the hand.
  *
  * <p>Both views use this: the body view from inside the game's own held-item drawing, and the
  * first-person view from the mod's drawing of the weapon arm. It must be called when the drawing
@@ -22,13 +22,14 @@ import net.minecraft.util.EnumHandSide;
 public final class HeldItemPose {
 
     /**
-     * Where the game puts an item's grip, seen from the arm's joint: down the arm and a little
-     * forward. These are the game's own held-item offsets (1/16, 0.125, -0.625) after its two
-     * placing turns; the first-person drawing uses the same game steps unturned.
+     * The middle of the fist, seen from the arm's joint: on the arm's center line (one model unit
+     * to the side of the joint), eight units down the arm. In the game's own hold the handle
+     * passes through this point, so a turn around it keeps the handle inside the fist. The point
+     * where the game starts to draw the item is not used: it lies at the edge of the hand, and a
+     * turn around it carries the handle out of the fist.
      */
-    private static final float GRIP_ALONG_ARM = 0.625F;
-    private static final float GRIP_FORWARD = -0.125F;
-    private static final float GRIP_SIDE = 0.0625F;
+    private static final float FIST_ALONG_ARM = 0.5F;
+    private static final float FIST_SIDE = 0.0625F;
 
     private HeldItemPose() {
     }
@@ -62,11 +63,11 @@ public final class HeldItemPose {
         if (degrees == null) {
             return;
         }
-        float side = left ? GRIP_SIDE : -GRIP_SIDE;
-        GlStateManager.translate(side, GRIP_ALONG_ARM, GRIP_FORWARD);
+        float side = left ? FIST_SIDE : -FIST_SIDE;
+        GlStateManager.translate(side, FIST_ALONG_ARM, 0.0F);
         GlStateManager.rotate((float) degrees[2], 0.0F, 0.0F, 1.0F);
         GlStateManager.rotate((float) degrees[1], 0.0F, 1.0F, 0.0F);
         GlStateManager.rotate((float) degrees[0], 1.0F, 0.0F, 0.0F);
-        GlStateManager.translate(-side, -GRIP_ALONG_ARM, -GRIP_FORWARD);
+        GlStateManager.translate(-side, -FIST_ALONG_ARM, 0.0F);
     }
 }
