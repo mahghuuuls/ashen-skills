@@ -70,7 +70,7 @@ A clip without both tracks for `right_arm` leaves the game's own hand in place. 
 
 The optional `camera` bone moves the view: its `rotation` is pitch (x), yaw (y) and roll (z) in degrees, added to the camera at full `cameraEffectIntensity` and scaled down with that setting. End the last clip of a skill at 0, 0, 0. For a left-handed player the yaw and roll are mirrored.
 
-The optional `item` bone turns the weapon inside the hand, in both views. Its `rotation` is in degrees around the axes of the arm that holds it, and the turn is made around the grip. The game holds an item at a right angle to the arm; `[90, 0, 0]` lays it in line with the arm, and `[90, -90, 0]` or `[90, 90, 0]` also turns the blade flat for a side slash; the sign of the second number is the direction of the twist. Start and end a skill's clips at `[0, 0, 0]` so the weapon leaves and returns to the game's own hold. Turn the weapon only while the arm is raised: a weapon laid in line with a lowered arm points at the ground.
+The optional `item` bone turns the weapon inside the hand, in both views. Its `rotation` is in degrees around the axes of the arm that holds it, and the turn is made around the middle of the fist, so the handle stays in the hand. The game holds an item at a right angle to the arm; `[90, 0, 0]` lays it in line with the arm, and `[90, -90, 0]` or `[90, 90, 0]` also turns the blade flat for a side slash; the sign of the second number is the direction of the twist. Start and end a skill's clips at `[0, 0, 0]` so the weapon leaves and returns to the game's own hold. Turn the weapon only while the arm is raised: a weapon laid in line with a lowered arm points at the ground.
 
 ## Third-person limits
 

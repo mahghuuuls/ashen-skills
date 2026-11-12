@@ -195,6 +195,22 @@ class ClipTest {
     }
 
     @Test
+    void theShippedSlashTurnsTheWeaponOnlyWhileTheArmIsRaisedInTheBodyView() throws Exception {
+        Clip execution = ClipParser.parse(shipped("third_execution"));
+        Clip recovery = ClipParser.parse(shipped("third_recovery"));
+        Clip interrupted = ClipParser.parse(shipped("third_interrupted_recovery"));
+
+        assertArrayEquals(new double[] {0, 0, 0}, ClipSampler.pose(execution, 0.07).rotationDegrees(Bone.ITEM), EXACT);
+        assertTrue(ClipSampler.pose(execution, 0.07).rotationDegrees(Bone.RIGHT_ARM)[0] <= -90);
+        assertArrayEquals(new double[] {0, 0, 0}, ClipSampler.pose(recovery, 0.3).rotationDegrees(Bone.ITEM), EXACT);
+        assertTrue(ClipSampler.pose(recovery, 0.3).rotationDegrees(Bone.RIGHT_ARM)[0] <= -90);
+        assertArrayEquals(new double[] {0, 0, 0},
+                ClipSampler.pose(recovery, recovery.lengthSeconds()).rotationDegrees(Bone.ITEM), EXACT);
+        assertArrayEquals(new double[] {0, 0, 0},
+                ClipSampler.pose(interrupted, interrupted.lengthSeconds()).rotationDegrees(Bone.ITEM), EXACT);
+    }
+
+    @Test
     void theFirstPersonSlashClipsLoadFitTheirPhasesAndJoin() throws Exception {
         SkillDefinition slash = BuiltInSkills.definitionOf("powerful_slash", DefaultsData.loadBundled());
         Clip execution = ClipParser.parse(shipped("first_execution"));
