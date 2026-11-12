@@ -26,7 +26,7 @@ A skill with no file for a view and phase shows no animation there, and the log 
     "right_arm": {
       "rotation": [
         { "t": 0.0,  "v": [-20, 0, 5] },
-        { "t": 0.18, "v": [25, 0, 90], "ease": "ease_out" }
+        { "t": 0.18, "v": [100, 0, 90], "ease": "ease_out" }
       ],
       "position": [
         { "t": 0.0, "v": [0, 0, 0] }
