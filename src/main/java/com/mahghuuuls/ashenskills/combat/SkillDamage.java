@@ -56,11 +56,20 @@ public final class SkillDamage {
         return dying == struckWithoutLooting ? 0 : level;
     }
 
+    /** Told about each target a strike damaged, in the order they were damaged. */
+    public interface StrikeListener {
+
+        void onDamaged(Entity target);
+    }
+
     /**
      * @param facingYaw the direction fixed when the skill executed
+     * @param listener told about each damaged target
      * @return how many targets took damage
      */
-    public static int strike(EntityPlayer user, ItemStack weapon, SkillDefinition skill, HitShape shape, float facingYaw) {
+    public static int strike(
+            EntityPlayer user, ItemStack weapon, SkillDefinition skill, HitShape shape, float facingYaw,
+            StrikeListener listener) {
         int cap = Settings.general().getInt(SettingKey.HIT_TARGET_CAP_PER_WINDOW);
         Area area = new Area(shape, facingYaw,
                 skill.number(SkillNumber.REACH_BELOW), skill.number(SkillNumber.REACH_ABOVE));
@@ -73,6 +82,7 @@ public final class SkillDamage {
                 float dealt = damage(user, weapon, skill, target);
                 if (dealt >= 0) {
                     damaged++;
+                    listener.onDamaged(target);
                 }
                 if (report != null) {
                     report.append(' ').append(target.getName()).append('#').append(target.getEntityId())

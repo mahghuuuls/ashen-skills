@@ -116,6 +116,12 @@ class ArchitectureRulesTest {
         assertBroken(ROOT + ".combat.math", ROOT + ".runtime.SkillRuntime");
         assertBroken(ROOT + ".combat.math", "net.minecraft.entity.Entity");
         assertAllowed(ROOT + ".combat.math", "java.util.List");
+        assertBroken(ROOT + ".client.animation.clip", "net.minecraft.client.Minecraft");
+        assertBroken(ROOT + ".client.animation.clip", "net.minecraft.util.ResourceLocation");
+        assertBroken(ROOT + ".client.animation.clip", ROOT + ".network.AshenNetwork");
+        assertBroken(ROOT + ".client.animation.clip", ROOT + ".runtime.SkillRuntime");
+        assertAllowed(ROOT + ".client.animation.clip", "com.google.gson.JsonObject");
+        assertAllowed(ROOT + ".client.animation", "net.minecraft.client.Minecraft");
         assertAllowed(ROOT + ".combat", "net.minecraft.entity.Entity");
         assertAllowed(ROOT + ".runtime", ROOT + ".weapon.SkillTag");
         assertAllowed(ROOT + ".weapon", ROOT + ".config.Settings");

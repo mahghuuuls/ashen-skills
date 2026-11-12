@@ -1,0 +1,20 @@
+{
+  "skill.powerful_slash.swing": {
+    "category": "player",
+    "subtitle": "subtitles.ashenskills.powerful_slash.swing",
+    "sounds": [
+      { "name": "entity/player/attack/sweep1", "pitch": 0.7, "volume": 0.9 },
+      { "name": "entity/player/attack/sweep3", "pitch": 0.7, "volume": 0.9 },
+      { "name": "entity/player/attack/sweep5", "pitch": 0.75, "volume": 0.9 }
+    ]
+  },
+  "skill.powerful_slash.impact": {
+    "category": "player",
+    "subtitle": "subtitles.ashenskills.powerful_slash.impact",
+    "sounds": [
+      { "name": "entity/player/attack/strong1", "pitch": 0.8, "volume": 1.0 },
+      { "name": "entity/player/attack/strong3", "pitch": 0.8, "volume": 1.0 },
+      { "name": "entity/player/attack/crit2", "pitch": 0.7, "volume": 0.9 }
+    ]
+  }
+}

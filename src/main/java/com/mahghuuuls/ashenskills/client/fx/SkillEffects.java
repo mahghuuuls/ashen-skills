@@ -1,0 +1,81 @@
+package com.mahghuuuls.ashenskills.client.fx;
+
+import com.mahghuuuls.ashenskills.config.SettingKey;
+import com.mahghuuuls.ashenskills.config.Settings;
+import com.mahghuuuls.ashenskills.diagnostics.Diagnostics;
+import com.mahghuuuls.ashenskills.network.EffectCueMessage;
+import com.mahghuuuls.ashenskills.sound.SkillSounds;
+import java.util.Random;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
+
+/**
+ * What a skill's moments look and sound like on this client. A swing plays the skill's swing sound
+ * and one sweep mark; an impact plays the skill's impact sound and a burst of sparks at the target,
+ * within the player's particle limit for one skill use. Only particles and sounds: no block and no
+ * entity is changed.
+ */
+public final class SkillEffects {
+
+    /** How far from the middle of a target a spark may start, in blocks. A look, not a game rule. */
+    private static final double SPARK_SPREAD = 0.35;
+    /** How fast a spark may fly off, in blocks per tick. A look, not a game rule. */
+    private static final double SPARK_SPEED = 0.25;
+
+    private static final ParticleBudget BUDGET = new ParticleBudget();
+
+    private SkillEffects() {
+    }
+
+    /**
+     * @param kind a kind code of {@link EffectCueMessage}
+     * @param particles how many impact particles the skill asks for
+     */
+    public static void play(
+            byte kind, int userEntityId, int useId, String skillId, double x, double y, double z, int particles) {
+        WorldClient world = Minecraft.getMinecraft().world;
+        if (world == null) {
+            return;
+        }
+        boolean impact = kind == EffectCueMessage.IMPACT;
+        if (!impact && kind != EffectCueMessage.SWING) {
+            return;
+        }
+        SoundEvent sound = SkillSounds.of(skillId, impact ? SkillSounds.IMPACT : SkillSounds.SWING);
+        world.playSound(x, y, z, sound, SoundCategory.PLAYERS, 1.0F, 1.0F, false);
+        int spawned;
+        if (impact) {
+            int limit = Settings.general().getInt(SettingKey.MAX_IMPACT_PARTICLES_PER_SKILL);
+            spawned = BUDGET.take(userEntityId, useId, particles, limit);
+            Random random = world.rand;
+            for (int i = 0; i < spawned; i++) {
+                world.spawnParticle(
+                        EnumParticleTypes.CRIT,
+                        x + (random.nextDouble() - 0.5) * 2 * SPARK_SPREAD,
+                        y + (random.nextDouble() - 0.5) * 2 * SPARK_SPREAD,
+                        z + (random.nextDouble() - 0.5) * 2 * SPARK_SPREAD,
+                        (random.nextDouble() - 0.5) * 2 * SPARK_SPEED,
+                        random.nextDouble() * SPARK_SPEED,
+                        (random.nextDouble() - 0.5) * 2 * SPARK_SPEED);
+            }
+        } else {
+            world.spawnParticle(EnumParticleTypes.SWEEP_ATTACK, x, y, z, 0.0, 0.0, 0.0);
+            spawned = 1;
+        }
+        Diagnostics.log("CLIENT_CUE", "kind={} user={} use={} skill={} sound={} particles={} x={} y={} z={}",
+                impact ? "IMPACT" : "SWING", userEntityId, useId, skillId, sound.getSoundName(), spawned,
+                round(x), round(y), round(z));
+    }
+
+    private static double round(double value) {
+        return Math.round(value * 100.0) / 100.0;
+    }
+
+    /** Forgets the particle counts; for leaving a world. */
+    public static void reset() {
+        BUDGET.clear();
+    }
+}

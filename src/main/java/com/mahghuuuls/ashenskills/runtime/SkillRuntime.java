@@ -38,6 +38,7 @@ public final class SkillRuntime {
     private final Map<UUID, SkillSession> sessions = new HashMap<>();
     private final CooldownStore cooldowns;
     private final SkillMessenger messenger;
+    private int nextUseId;
 
     public SkillRuntime(CooldownStore cooldowns, SkillMessenger messenger) {
         this.cooldowns = cooldowns;
@@ -82,7 +83,7 @@ public final class SkillRuntime {
         cooldowns.start(player, cooldownMillis);
         SkillSession session = new SkillSession(
                 player.getUniqueID(), skill, player.inventory.currentItem, weapon.getItem(), player.rotationYaw,
-                Settings.general().getInt(SettingKey.HIT_WINDOW_CAP_PER_ACTIVATION));
+                Settings.general().getInt(SettingKey.HIT_WINDOW_CAP_PER_ACTIVATION), nextUseId++);
         sessions.put(player.getUniqueID(), session);
         applySpeed(player, session.speedFraction());
         ActionLock.stopForbiddenUse(session, player);
@@ -141,7 +142,7 @@ public final class SkillRuntime {
         while (sessions.get(session.playerId()) == session
                 && session.phase() != SkillPhase.INTERRUPTED_RECOVERY
                 && (window = session.hitSchedule().nextDue(session.timeline().executionTicksElapsed())) >= 0) {
-            behavior.onHitWindow(new RuntimeSkillContext(player, session), window);
+            behavior.onHitWindow(new RuntimeSkillContext(player, session, messenger), window);
         }
     }
 

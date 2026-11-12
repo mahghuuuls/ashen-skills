@@ -22,6 +22,8 @@ public final class AshenNetwork {
         channel.registerMessage(PhaseUpdateMessage.Handler.class, PhaseUpdateMessage.class, 1, Side.CLIENT);
         channel.registerMessage(RefusalMessage.Handler.class, RefusalMessage.class, 2, Side.CLIENT);
         channel.registerMessage(CooldownStateMessage.Handler.class, CooldownStateMessage.class, 3, Side.CLIENT);
+        channel.registerMessage(PoseControlMessage.Handler.class, PoseControlMessage.class, 4, Side.CLIENT);
+        channel.registerMessage(EffectCueMessage.Handler.class, EffectCueMessage.class, 5, Side.CLIENT);
     }
 
     public static SimpleNetworkWrapper channel() {

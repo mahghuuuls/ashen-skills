@@ -1,7 +1,9 @@
-commands.ashenskills.usage=/ashenskills inspect [player] | start <player> | clear <player> phase|cooldown
+commands.ashenskills.usage=/ashenskills inspect [player] | start <player> | clear <player> phase|cooldown | pose <player> pin <skill> <phase> <seconds> | pose <player> unpin|dump | pose <player> view <0|1|2>
 key.categories.ashenskills=Ashen Skills
 key.ashenskills.skill=Use Weapon Skill
 ashenskills.refusal.skill_unavailable=Skill unavailable
 ashenskills.refusal.incompatible_weapon=Incompatible weapon
 ashenskills.refusal.on_cooldown=Skill on cooldown
 ashenskills.refusal.not_allowed_now=Cannot use the skill now
+subtitles.ashenskills.powerful_slash.swing=Powerful Slash swings
+subtitles.ashenskills.powerful_slash.impact=Powerful Slash hits

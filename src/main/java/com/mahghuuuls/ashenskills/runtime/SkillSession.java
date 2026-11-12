@@ -16,19 +16,27 @@ public final class SkillSession {
     private final Item weaponItem;
     private final float facingYaw;
     private final HitSchedule hitSchedule;
+    private final int useId;
 
+    /** @param useId tells this use of a skill from every other use while the server runs */
     SkillSession(
-            UUID playerId, SkillDefinition skill, int hotbarSlot, Item weaponItem, float facingYaw, int hitWindowCap) {
+            UUID playerId, SkillDefinition skill, int hotbarSlot, Item weaponItem, float facingYaw, int hitWindowCap,
+            int useId) {
         this.playerId = playerId;
         this.skill = skill;
         this.hotbarSlot = hotbarSlot;
         this.weaponItem = weaponItem;
         this.facingYaw = facingYaw;
+        this.useId = useId;
         this.hitSchedule = new HitSchedule(skill.hitWindowSeconds(), hitWindowCap);
         this.timeline = new SessionTimeline(
                 skill.number(SkillNumber.EXECUTION_LENGTH),
                 skill.number(SkillNumber.RECOVERY),
                 skill.number(SkillNumber.INTERRUPTED_RECOVERY));
+    }
+
+    int useId() {
+        return useId;
     }
 
     public UUID playerId() {

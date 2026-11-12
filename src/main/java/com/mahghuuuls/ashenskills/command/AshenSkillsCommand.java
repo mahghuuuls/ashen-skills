@@ -1,6 +1,9 @@
 package com.mahghuuuls.ashenskills.command;
 
 import com.mahghuuuls.ashenskills.AshenSkillsMod;
+import com.mahghuuuls.ashenskills.api.SkillPhase;
+import com.mahghuuuls.ashenskills.network.AshenNetwork;
+import com.mahghuuuls.ashenskills.network.PoseControlMessage;
 import com.mahghuuuls.ashenskills.runtime.RefusalReason;
 import com.mahghuuuls.ashenskills.runtime.SkillRuntime;
 import com.mahghuuuls.ashenskills.runtime.SkillRuntimeHooks;
@@ -9,6 +12,7 @@ import com.mahghuuuls.ashenskills.weapon.AttachedSkill;
 import com.mahghuuuls.ashenskills.weapon.WeaponTypes;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import javax.annotation.Nullable;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
@@ -23,7 +27,8 @@ import net.minecraft.util.text.TextComponentString;
 
 /**
  * Operator command {@code /ashenskills}: shows what the mod knows about a player's weapon and
- * skill state, starts a player's skill for testing, and clears a stuck phase or a cooldown.
+ * skill state, starts a player's skill for testing, clears a stuck phase or a cooldown, and asks
+ * a player's client to use its animation check controls.
  */
 public final class AshenSkillsCommand extends CommandBase {
 
@@ -74,9 +79,48 @@ public final class AshenSkillsCommand extends CommandBase {
             String result = "clear cooldown player=" + player.getName() + " hadRemainingMs=" + had;
             reply(sender, result);
             audit(sender, result);
+        } else if ("pose".equals(args[0]) && args.length >= 3) {
+            EntityPlayerMP player = getPlayer(server, sender, args[1]);
+            AshenNetwork.channel().sendTo(poseControl(args), player);
+            String result = "pose player=" + player.getName() + " request=" + buildString(args, 2)
+                    + " (acts only when that client's animationCheckControls setting is on)";
+            reply(sender, result);
+            audit(sender, result);
         } else {
             throw new WrongUsageException(USAGE);
         }
+    }
+
+    /** {@code pose <player> pin <skill> <phase> <seconds> | unpin | dump | view <0|1|2>} */
+    private static PoseControlMessage poseControl(String[] args) throws CommandException {
+        String control = args[2];
+        if ("pin".equals(control) && args.length == 6) {
+            SkillPhase phase = phaseNamed(args[4]);
+            if (phase == null) {
+                throw new WrongUsageException(USAGE);
+            }
+            return PoseControlMessage.pin(
+                    new ResourceLocation(args[3]).toString(), phase, parseDouble(args[5], 0.0, 600.0));
+        }
+        if ("unpin".equals(control) && args.length == 3) {
+            return PoseControlMessage.unpin();
+        }
+        if ("dump".equals(control) && args.length == 3) {
+            return PoseControlMessage.dump();
+        }
+        if ("view".equals(control) && args.length == 4) {
+            return PoseControlMessage.view(parseInt(args[3], 0, 2));
+        }
+        throw new WrongUsageException(USAGE);
+    }
+
+    private static SkillPhase phaseNamed(String name) {
+        for (SkillPhase phase : SkillPhase.values()) {
+            if (phase.name().toLowerCase(Locale.ROOT).equals(name)) {
+                return phase;
+            }
+        }
+        return null;
     }
 
     private static void reply(ICommandSender sender, String text) {
@@ -107,13 +151,16 @@ public final class AshenSkillsCommand extends CommandBase {
     public List<String> getTabCompletions(
             MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos) {
         if (args.length == 1) {
-            return getListOfStringsMatchingLastWord(args, "inspect", "start", "clear");
+            return getListOfStringsMatchingLastWord(args, "inspect", "start", "clear", "pose");
         }
         if (args.length == 2) {
             return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
         }
         if (args.length == 3 && "clear".equals(args[0])) {
             return getListOfStringsMatchingLastWord(args, "phase", "cooldown");
+        }
+        if (args.length == 3 && "pose".equals(args[0])) {
+            return getListOfStringsMatchingLastWord(args, "pin", "unpin", "dump", "view");
         }
         return Collections.emptyList();
     }

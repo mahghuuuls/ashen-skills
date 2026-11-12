@@ -86,6 +86,7 @@ class BuiltInSkillsTest {
         assertEquals(3.5, slash.number(SkillNumber.REACH));
         assertEquals(110.0, slash.number(SkillNumber.ARC));
         assertEquals(0.6, slash.number(SkillNumber.KNOCKBACK_STRENGTH));
+        assertEquals(12.0, slash.number(SkillNumber.IMPACT_PARTICLES));
         assertEquals(1.0, slash.number(SkillNumber.REACH_BELOW));
         assertEquals(3.0, slash.number(SkillNumber.REACH_ABOVE));
         assertEquals(true, slash.flag(SkillFlag.DAMAGE_ENCHANTMENTS));
@@ -96,6 +97,7 @@ class BuiltInSkillsTest {
         assertThrows(IllegalStateException.class, () -> slash.number(SkillNumber.WIDTH));
         assertEquals(set("grounded"), slash.allowedStates());
         assertEquals(false, slash.flag(SkillFlag.MOUNTED_ALLOWED));
+        assertEquals(false, slash.flag(SkillFlag.JUMP_DURING_EXECUTION));
     }
 
     /**

@@ -32,7 +32,10 @@ final class ArchitectureRules {
     private static final String[] GAME_PREFIXES = {"net.minecraft.", "net.minecraftforge."};
 
     /** Packages that hold rules other parts build on, and so must not know those parts. */
-    private static final String[] LOW_LEVEL_PACKAGES = {"weapon", "attribute", "combat.math"};
+    private static final String[] LOW_LEVEL_PACKAGES = {"weapon", "attribute", "combat.math", "client.animation.clip"};
+
+    /** Packages of plain arithmetic and data, testable without the game. */
+    private static final String[] PURE_PACKAGES = {"combat.math", "client.animation.clip"};
 
     private static final String[] HIGH_LEVEL_PACKAGES = {"runtime", "network", "ashenforge"};
 
@@ -57,8 +60,8 @@ final class ArchitectureRules {
                     found.add(packageName + " imports " + imported + "; only " + foreign.getValue() + " may");
                 }
             }
-            if (inPackage(local, "combat.math") && startsWithAny(imported, GAME_PREFIXES)) {
-                found.add("combat.math is pure arithmetic but imports " + imported);
+            if (inAny(local, PURE_PACKAGES) && startsWithAny(imported, GAME_PREFIXES)) {
+                found.add(packageName + " is pure arithmetic and data but imports " + imported);
             }
             String importedLocal = localName(imported);
             if (importedLocal == null) {

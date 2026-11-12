@@ -27,7 +27,10 @@ public enum SettingKey {
     CHARGE_BAR("chargeBar", Kind.BOOLEAN, "Shows the charge bar near the crosshair while charging a skill."),
     COOLDOWN_NUMBER("cooldownNumber", Kind.BOOLEAN, "Shows the seconds left on the skill cooldown."),
     MAX_IMPACT_PARTICLES_PER_SKILL("maxImpactParticlesPerSkill", Kind.INTEGER,
-            "Most impact particles one skill use can spawn on this client.");
+            "Most impact particles one skill use can spawn on this client."),
+    ANIMATION_CHECK_CONTROLS("animationCheckControls", Kind.BOOLEAN,
+            "Lets an operator hold a skill animation at a chosen time on this client, write its pose to the log,"
+                    + " and set the camera view (/ashenskills pose). For checking animations.");
 
     /** How a setting is stored and read. */
     public enum Kind {

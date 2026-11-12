@@ -9,7 +9,8 @@ import net.minecraft.item.ItemStack;
 
 /**
  * What a player may not do while using a skill. Normal attacks are blocked in every phase; raising
- * a shield and using items follow the skill's own rules for the phase.
+ * a shield, using items, and jumping follow the skill's own rules for the phase. The client is told
+ * the answers for attack and jump with each phase report, so it never works them out itself.
  */
 final class ActionLock {
 
@@ -19,6 +20,16 @@ final class ActionLock {
     /** Normal attacks, on entities and on blocks, have no effect during any skill phase. */
     static boolean blocksAttack(SkillSession session) {
         return session != null;
+    }
+
+    /**
+     * Whether the player may not jump now. Jumping is the client's own action, so this rule is kept
+     * by the player's client; the server only says what the rule is.
+     */
+    static boolean blocksJump(SkillSession session) {
+        return session != null
+                && session.phase() == SkillPhase.EXECUTION
+                && !session.skill().flag(SkillFlag.JUMP_DURING_EXECUTION);
     }
 
     /** Whether the player may not start, or go on with, using that item now. */

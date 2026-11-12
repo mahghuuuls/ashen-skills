@@ -16,7 +16,8 @@
     "skillHud":                 { "default": true, "owner": "client", "source": "brief 10.12" },
     "chargeBar":                { "default": true, "owner": "client", "source": "brief 10.12" },
     "cooldownNumber":           { "default": true, "owner": "client", "source": "brief 10.13" },
-    "maxImpactParticlesPerSkill":{ "default": 100, "min": 0,   "max": 500, "owner": "client", "source": "brief 10.27" }
+    "maxImpactParticlesPerSkill":{ "default": 100, "min": 0,   "max": 500, "owner": "client", "source": "brief 10.27" },
+    "animationCheckControls":   { "default": false,"owner": "client", "source": "proposal (animation check controls)" }
   },
   "perSkillRanges": {
     "damageMultiplier": [1, 4],
@@ -146,7 +147,8 @@
     "solidBlocksObstruct": true,
     "reachBelow": 1.0,
     "reachAbove": 3.0,
-    "source": "brief 7.10, 5.28; the rest are proposals. reachBelow and reachAbove (blocks below and above the user's feet that a strike reaches) were added in Implementation"
+    "impactParticles": 12,
+    "source": "brief 7.10, 5.28; the rest are proposals. reachBelow and reachAbove (blocks below and above the user's feet that a strike reaches) were added in Implementation, and impactParticles (sparks asked for at each damaged target, before the player's particle limit)"
   },
   "builtInWeaponTypes": {
     "_about": "Type ids the mod knows without pack configuration. 'sword' covers the five vanilla swords by registry name; 'vanillaItemTypes' lists them. The others are Spartan Weaponry melee categories, assigned only when Spartan Weaponry is installed. Ranged and thrown Spartan weapons get no built-in type.",

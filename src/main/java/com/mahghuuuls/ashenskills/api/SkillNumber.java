@@ -26,6 +26,8 @@ public enum SkillNumber {
     REACH_BELOW("reachBelow", true),
     /** How far above the user's feet a target's box may begin and still be reached. */
     REACH_ABOVE("reachAbove", true),
+    /** Sparks shown at each damaged target, before each player's own particle limit. */
+    IMPACT_PARTICLES("impactParticles", true),
     /**
      * Strength of the push a hit gives, away from the user. The game also gives its own small push
      * for any damage a creature takes from another; this one comes in addition.

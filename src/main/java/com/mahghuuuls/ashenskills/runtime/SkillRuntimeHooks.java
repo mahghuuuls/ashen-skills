@@ -1,6 +1,7 @@
 package com.mahghuuuls.ashenskills.runtime;
 
 import com.mahghuuuls.ashenskills.combat.SkillDamage;
+import com.mahghuuuls.ashenskills.diagnostics.Diagnostics;
 import com.mahghuuuls.ashenskills.network.AshenNetwork;
 import com.mahghuuuls.ashenskills.network.SkillInputMessage;
 import net.minecraft.entity.Entity;
@@ -107,7 +108,11 @@ public final class SkillRuntimeHooks implements SkillInputMessage.Receiver {
     }
 
     private static boolean isAttackBlocked(EntityPlayer player) {
-        return !player.world.isRemote && runtime.blocksAttack(player);
+        if (player.world.isRemote || !runtime.blocksAttack(player)) {
+            return false;
+        }
+        Diagnostics.log("ATTACK_BLOCKED", "player={} reason=skillPhase", player.getName());
+        return true;
     }
 
     /** A kill made by a skill that does not use Looting drops as if the weapon had none. */

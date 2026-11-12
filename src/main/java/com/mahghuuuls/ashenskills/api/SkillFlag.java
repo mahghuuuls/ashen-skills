@@ -17,6 +17,8 @@ public enum SkillFlag {
     BLOCKING_DURING_RECOVERY("blockingDuringRecovery"),
     /** Whether the player may use items during recovery. */
     ITEM_USE_DURING_RECOVERY("itemUseDuringRecovery"),
+    /** Whether the player may jump during execution. */
+    JUMP_DURING_EXECUTION("jumpDuringExecution"),
     /** Whether solid blocks between the user and a target shield that target. */
     SOLID_BLOCKS_OBSTRUCT("solidBlocksObstruct"),
     /** Whether the weapon's damage enchantments (Sharpness, Smite, Bane of Arthropods) add to a hit. */

@@ -2,12 +2,15 @@
   "package": "${mixin_package}",
   "refmap": "${mixin_refmap}",
   "required": true,
+  "plugin": "com.mahghuuuls.ashenskills.mixinsupport.ModelHookSwitch",
   "minVersion": "0.8",
   "compatibilityLevel": "JAVA_8",
   "injectors": {
     "defaultRequire": 1
   },
   "mixins": [],
-  "client": [],
+  "client": [
+    "ModelBipedMixin"
+  ],
   "server": []
 }

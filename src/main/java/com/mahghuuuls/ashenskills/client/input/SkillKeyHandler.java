@@ -1,7 +1,6 @@
 package com.mahghuuuls.ashenskills.client.input;
 
 import com.mahghuuuls.ashenskills.AshenSkillsMod;
-import com.mahghuuuls.ashenskills.client.state.ClientSkillState;
 import com.mahghuuuls.ashenskills.config.SettingKey;
 import com.mahghuuuls.ashenskills.config.Settings;
 import com.mahghuuuls.ashenskills.network.AshenNetwork;
@@ -53,7 +52,6 @@ public final class SkillKeyHandler {
         Minecraft minecraft = Minecraft.getMinecraft();
         if (minecraft.player == null) {
             wasDown = false;
-            ClientSkillState.clear();
             return;
         }
         boolean down = skillKey.isKeyDown() && minecraft.currentScreen == null;
