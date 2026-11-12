@@ -1,1 +1,7 @@
-commands.ashenskills.usage=/ashenskills inspect [player]
+commands.ashenskills.usage=/ashenskills inspect [player] | start <player> | clear <player> phase|cooldown
+key.categories.ashenskills=Ashen Skills
+key.ashenskills.skill=Use Weapon Skill
+ashenskills.refusal.skill_unavailable=Skill unavailable
+ashenskills.refusal.incompatible_weapon=Incompatible weapon
+ashenskills.refusal.on_cooldown=Skill on cooldown
+ashenskills.refusal.not_allowed_now=Cannot use the skill now

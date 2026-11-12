@@ -18,8 +18,10 @@ import org.junit.jupiter.api.Test;
 
 class AttachedSkillTest {
 
-    private static final SkillDefinition SLASH = new SkillDefinition(
-            new ResourceLocation("test", "slash"), ActivationKind.INSTANT, types("sword", "greatsword"));
+    private static final SkillDefinition SLASH = SkillDefinition
+            .builder(new ResourceLocation("test", "slash"), ActivationKind.INSTANT)
+            .weaponTypes(types("sword", "greatsword"))
+            .build();
 
     private static Set<String> types(String... names) {
         return new HashSet<>(Arrays.asList(names));

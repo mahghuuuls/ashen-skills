@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.mahghuuuls.ashenskills.api.ActivationKind;
 import com.mahghuuuls.ashenskills.api.SkillDefinition;
+import com.mahghuuuls.ashenskills.api.SkillFlag;
+import com.mahghuuuls.ashenskills.api.SkillNumber;
 import com.mahghuuuls.ashenskills.config.DefaultsData;
 import java.io.StringReader;
 import java.util.Arrays;
@@ -51,6 +53,36 @@ class BuiltInSkillsTest {
         assertEquals(set("mod:blade", "mod:club"), types.keySet());
         assertEquals(set("sword", "katana"), types.get("mod:blade"));
         assertEquals(set("mace"), types.get("mod:club"));
+    }
+
+    @Test
+    void numbersAndRulesComeFromTheSkillAndElseFromTheCommonRules() {
+        DefaultsData defaults = DefaultsData.parse(new StringReader("{\"skills\":{\"spin\":{"
+                + "\"activation\":\"instant\",\"weaponTypes\":[\"axe\"],"
+                + "\"cooldown\":3.5,\"mountedAllowed\":true}},"
+                + "\"commonSkillRules\":{\"allowedStartStates\":[\"grounded\",\"swimming\"],"
+                + "\"mountedAllowed\":false,\"itemUseDuringRecovery\":true,\"recovery\":0.25}}"));
+
+        SkillDefinition spin = BuiltInSkills.definitionOf("spin", defaults);
+
+        assertEquals(3.5, spin.number(SkillNumber.COOLDOWN));
+        assertEquals(0.25, spin.number(SkillNumber.RECOVERY));
+        assertEquals(true, spin.flag(SkillFlag.MOUNTED_ALLOWED));
+        assertEquals(true, spin.flag(SkillFlag.ITEM_USE_DURING_RECOVERY));
+        assertEquals(set("grounded", "swimming"), spin.allowedStates());
+        assertEquals(true, spin.missingValues().contains("executionLength"));
+        assertEquals(false, spin.missingValues().contains("cooldown"));
+        assertThrows(IllegalStateException.class, () -> spin.number(SkillNumber.EXECUTION_LENGTH));
+        assertThrows(IllegalStateException.class, () -> spin.flag(SkillFlag.BLOCKING_DURING_EXECUTION));
+    }
+
+    @Test
+    void theShippedPowerfulSlashIsCompleteAndStartsOnTheGroundOnly() {
+        SkillDefinition slash = BuiltInSkills.definitionOf("powerful_slash", DefaultsData.loadBundled());
+
+        assertEquals(java.util.Collections.emptyList(), slash.missingValues());
+        assertEquals(set("grounded"), slash.allowedStates());
+        assertEquals(false, slash.flag(SkillFlag.MOUNTED_ALLOWED));
     }
 
     /**

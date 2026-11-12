@@ -73,8 +73,8 @@ public final class DefaultsData {
         if (!skills.has(name)) {
             throw new IllegalArgumentException("Defaults file has no skill '" + name + "'");
         }
-        JsonObject entry = skills.getAsJsonObject(name);
-        return new SkillEntry(entry.get("activation").getAsString(), strings(entry.getAsJsonArray("weaponTypes")));
+        JsonObject common = root.has("commonSkillRules") ? root.getAsJsonObject("commonSkillRules") : new JsonObject();
+        return new SkillEntry(skills.getAsJsonObject(name), common);
     }
 
     /** Item registry name to the weapon types that item has without any pack configuration. */
@@ -95,24 +95,52 @@ public final class DefaultsData {
         return Collections.unmodifiableSet(values);
     }
 
-    /** One skill as the defaults file states it. */
+    /**
+     * One skill as the defaults file states it. A rule the skill does not state itself is taken
+     * from the file's rules common to all skills.
+     */
     public static final class SkillEntry {
 
-        private final String activation;
-        private final Set<String> weaponTypes;
+        private final JsonObject own;
+        private final JsonObject common;
 
-        SkillEntry(String activation, Set<String> weaponTypes) {
-            this.activation = activation;
-            this.weaponTypes = weaponTypes;
+        SkillEntry(JsonObject own, JsonObject common) {
+            this.own = own;
+            this.common = common;
         }
 
         /** "instant", "stance" or "charged". */
         public String activation() {
-            return activation;
+            return own.get("activation").getAsString();
         }
 
         public Set<String> weaponTypes() {
-            return weaponTypes;
+            return strings(own.getAsJsonArray("weaponTypes"));
+        }
+
+        /** The player states in which the skill may start; empty when the file states none. */
+        public Set<String> allowedStartStates() {
+            JsonElement states = find("allowedStartStates");
+            return states == null ? Collections.<String>emptySet() : strings(states.getAsJsonArray());
+        }
+
+        /** The number of that name, or null when the file has none for this skill. */
+        public Double number(String name) {
+            JsonElement value = find(name);
+            return value == null ? null : value.getAsDouble();
+        }
+
+        /** The yes-or-no rule of that name, or null when the file has none for this skill. */
+        public Boolean flag(String name) {
+            JsonElement value = find(name);
+            return value == null ? null : value.getAsBoolean();
+        }
+
+        private JsonElement find(String name) {
+            if (own.has(name)) {
+                return own.get(name);
+            }
+            return common.has(name) ? common.get(name) : null;
         }
     }
 

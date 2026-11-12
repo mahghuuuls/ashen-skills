@@ -19,11 +19,14 @@ public final class SkillRegistry {
     private SkillRegistry() {
     }
 
-    /** @throws IllegalStateException when loading is over or the id is already taken */
+    /** @throws IllegalStateException when loading is over, the id is taken, or the skill is incomplete */
     public static void register(SkillDefinition definition) {
         if (closed) {
             throw new IllegalStateException(
                     "Skill " + definition.id() + " was registered too late; register skills before the game finishes loading");
+        }
+        if (!definition.missingValues().isEmpty()) {
+            throw new IllegalStateException("Skill " + definition.id() + " lacks values: " + definition.missingValues());
         }
         if (SKILLS.containsKey(definition.id())) {
             throw new IllegalStateException("A skill with id " + definition.id() + " is already registered");
