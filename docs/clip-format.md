@@ -26,7 +26,7 @@ A skill with no file for a view and phase shows no animation there, and the log 
     "right_arm": {
       "rotation": [
         { "t": 0.0,  "v": [-20, 0, 5] },
-        { "t": 0.18, "v": [100, 0, 90], "ease": "ease_out" }
+        { "t": 0.18, "v": [-85, 95, 0], "ease": "ease_out" }
       ],
       "position": [
         { "t": 0.0, "v": [0, 0, 0] }
@@ -70,11 +70,11 @@ A clip without both tracks for `right_arm` leaves the game's own hand in place. 
 
 The optional `camera` bone moves the view: its `rotation` is pitch (x), yaw (y) and roll (z) in degrees, added to the camera at full `cameraEffectIntensity` and scaled down with that setting. End the last clip of a skill at 0, 0, 0. For a left-handed player the yaw and roll are mirrored.
 
-The `item` bone is reserved and has no effect yet.
+The optional `item` bone turns the weapon inside the hand, in both views. Its `rotation` is in degrees around the axes of the arm that holds it, and the turn is made around the grip. The game holds an item at a right angle to the arm; `[90, 0, 0]` lays it in line with the arm, and `[90, 90, 0]` also turns the blade flat for a side slash. Start and end a skill's clips at `[0, 0, 0]` so the weapon leaves and returns to the game's own hold.
 
 ## Third-person limits
 
-The third-person view uses rotations only. It ignores `position` tracks, the `item` bone, and the z rotation of `head` and `body`: the game never resets those values, so a clip that set them would leave the model bent after the clip. When the body turns around y, the shoulders follow it.
+The third-person view uses rotations only. It ignores `position` tracks and the z rotation of `head` and `body`: the game never resets those values, so a clip that set them would leave the model bent after the clip. When the body turns around y, the shoulders follow it.
 
 A file with an unknown bone, an unknown track, keys out of order, a time outside the clip, or a value that is not three numbers is refused as a whole. The log says which file and what is wrong.
 

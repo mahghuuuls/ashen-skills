@@ -8,9 +8,9 @@ import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
 /**
- * Lets the body-model hook be left out for one launch, with the Java option
- * {@code -Dashenskills.modelHook=false}. For comparing the game with and without the hook when a
- * rendering problem is looked into; skills then show no body animation. This class must live
+ * Lets the body-view hooks (the body pose and the weapon's turn in the hand) be left out for one
+ * launch, with the Java option {@code -Dashenskills.modelHook=false}. For comparing the game with
+ * and without the hooks when a rendering problem is looked into; skills then show no body animation. This class must live
  * outside the Mixin package: Mixin refuses to load ordinary classes from a package it owns.
  */
 public final class ModelHookSwitch implements IMixinConfigPlugin {
@@ -21,7 +21,7 @@ public final class ModelHookSwitch implements IMixinConfigPlugin {
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
         if ("false".equalsIgnoreCase(System.getProperty(PROPERTY))) {
             LogManager.getLogger("Ashen Skills").warn(
-                    "-D{}=false: the body-model hook {} is left out; skills show no body animation",
+                    "-D{}=false: the body-view hook {} is left out; skills show no body animation",
                     PROPERTY, mixinClassName);
             return false;
         }

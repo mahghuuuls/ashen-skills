@@ -186,10 +186,11 @@ class ClipTest {
         double hitTime = slash.hitWindowSeconds().get(0);
         Pose strike = ClipSampler.pose(ClipParser.parse(shipped("third_execution")), hitTime);
 
-        assertArrayEquals(new double[] {-35, 0, 90}, strike.rotationDegrees(Bone.RIGHT_ARM), EXACT);
+        assertArrayEquals(new double[] {-88, 5, 0}, strike.rotationDegrees(Bone.RIGHT_ARM), EXACT);
         assertArrayEquals(new double[] {20, 0, -22}, strike.rotationDegrees(Bone.LEFT_ARM), EXACT);
         assertArrayEquals(new double[] {4, -20, 0}, strike.rotationDegrees(Bone.BODY), EXACT);
-        assertEquals("body.rot=[4.00,-20.00,0.00] right_arm.rot=[-35.00,0.00,90.00] left_arm.rot=[20.00,0.00,-22.00]",
+        assertEquals("body.rot=[4.00,-20.00,0.00] right_arm.rot=[-88.00,5.00,0.00] left_arm.rot=[20.00,0.00,-22.00]"
+                        + " item.rot=[90.00,90.00,0.00]",
                 strike.describe());
     }
 
@@ -208,6 +209,11 @@ class ClipTest {
         assertArrayEquals(end.rotationDegrees(Bone.RIGHT_ARM), next.rotationDegrees(Bone.RIGHT_ARM), EXACT);
         assertArrayEquals(end.position(Bone.RIGHT_ARM), next.position(Bone.RIGHT_ARM), EXACT);
         assertArrayEquals(end.rotationDegrees(Bone.CAMERA), next.rotationDegrees(Bone.CAMERA), EXACT);
+        assertArrayEquals(end.rotationDegrees(Bone.ITEM), next.rotationDegrees(Bone.ITEM), EXACT);
+        // At the hit the sword is in line with the arm and lies flat, in both views.
+        Pose firstStrike = ClipSampler.pose(execution, slash.hitWindowSeconds().get(0));
+        assertArrayEquals(new double[] {90, 90, 0}, firstStrike.rotationDegrees(Bone.ITEM), EXACT);
+        assertArrayEquals(new double[] {-90, 5, 0}, firstStrike.rotationDegrees(Bone.RIGHT_ARM), EXACT);
         // The first-person view draws nothing without both a place and a rotation for the weapon arm.
         for (Clip clip : new Clip[] {execution, recovery, interrupted}) {
             Pose start = ClipSampler.pose(clip, 0.0);
@@ -226,7 +232,7 @@ class ClipTest {
         Clip execution = ClipParser.parse(shipped("third_execution"));
         Clip recovery = ClipParser.parse(shipped("third_recovery"));
 
-        for (Bone bone : new Bone[] {Bone.RIGHT_ARM, Bone.LEFT_ARM, Bone.BODY}) {
+        for (Bone bone : new Bone[] {Bone.RIGHT_ARM, Bone.LEFT_ARM, Bone.BODY, Bone.ITEM}) {
             assertArrayEquals(
                     ClipSampler.pose(execution, 0.5).rotationDegrees(bone),
                     ClipSampler.pose(recovery, 0.0).rotationDegrees(bone), EXACT, bone.name());

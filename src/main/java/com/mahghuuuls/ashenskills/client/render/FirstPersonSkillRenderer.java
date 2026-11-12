@@ -23,8 +23,9 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 /**
  * Draws the user's own weapon arm while a skill clip plays: the game's drawing of the main hand is
- * replaced by the player's arm, posed by the clip, with the weapon in its hand exactly as the game
- * holds it in third person. The other hand, and both hands when no clip plays, are the game's own.
+ * replaced by the player's arm, posed by the clip, with the weapon in its hand as the game holds
+ * it in third person, turned inside the hand when the clip has an item bone. The other hand, and
+ * both hands when no clip plays, are the game's own.
  *
  * <p>One bone drives the picture: the main arm. Its position is where the shoulder is, seen from
  * the eyes, in model units (1/16 block): x to the right, y up, z toward the viewer. Its rotation
@@ -77,7 +78,7 @@ public final class FirstPersonSkillRenderer {
                 minecraft, player, event.getItemStack(), left,
                 left ? model.bipedLeftArm : model.bipedRightArm,
                 sleeveWorn ? (left ? model.bipedLeftArmwear : model.bipedRightArmwear) : null,
-                rotation, shoulder);
+                rotation, shoulder, pose.rotationDegrees(Bone.ITEM));
         PlaybackRegistry.notePoseApplied(View.FIRST_PERSON);
     }
 
@@ -85,10 +86,11 @@ public final class FirstPersonSkillRenderer {
      * Every value changed on the shared body model is put back, and the matrix is restored.
      *
      * @param sleeve the outer skin layer of the arm, or null when the player has it switched off
+     * @param itemTurn the clip's turn of the weapon inside the hand, or null for the game's own hold
      */
     private static void drawArmWithWeapon(
             Minecraft minecraft, AbstractClientPlayer player, ItemStack weapon, boolean left,
-            ModelRenderer arm, ModelRenderer sleeve, float[] rotation, double[] shoulder) {
+            ModelRenderer arm, ModelRenderer sleeve, float[] rotation, double[] shoulder, double[] itemTurn) {
         float pointX = arm.rotationPointX;
         float pointY = arm.rotationPointY;
         float pointZ = arm.rotationPointZ;
@@ -119,6 +121,7 @@ public final class FirstPersonSkillRenderer {
             if (!weapon.isEmpty()) {
                 // The same steps as the game's held-item layer, so the weapon sits in the hand as in third person.
                 arm.postRender(MODEL_UNIT);
+                HeldItemPose.turnAroundGrip(itemTurn, left);
                 GlStateManager.rotate(-90.0F, 1.0F, 0.0F, 0.0F);
                 GlStateManager.rotate(180.0F, 0.0F, 1.0F, 0.0F);
                 GlStateManager.translate((left ? -1 : 1) / 16.0F, 0.125F, -0.625F);

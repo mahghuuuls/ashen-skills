@@ -9,7 +9,11 @@ public enum Bone {
     LEFT_ARM("left_arm"),
     RIGHT_LEG("right_leg"),
     LEFT_LEG("left_leg"),
-    /** The held weapon. Not used yet: the weapon follows the hand. */
+    /**
+     * The held weapon. Its rotation turns the weapon inside the hand, around the grip, on the axes
+     * of the arm that holds it. Without it the weapon sits as the game holds it, at a right angle
+     * to the arm.
+     */
     ITEM("item"),
     /**
      * The user's own camera, first-person view only. Its rotation is pitch (x), yaw (y) and roll

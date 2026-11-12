@@ -19,7 +19,8 @@ import net.minecraft.util.EnumHandSide;
  * <p>Only what the game sets again for every draw is written: the rotation of the arms and legs on
  * all three axes, and of head and body around x and y. The game never resets the z rotation of
  * head and body or the place of a part, so writing those would leave the model bent after the
- * clip. A clip's position tracks are therefore for the first-person view only.
+ * clip. A clip's position tracks are therefore for the first-person view only. The item bone is
+ * not applied here: the weapon is drawn after the body, see {@link HeldItemPose}.
  */
 public final class ThirdPersonPoseApplier {
 
@@ -85,7 +86,7 @@ public final class ThirdPersonPoseApplier {
      * In first person the user's body is not drawn. The game still poses the body model to draw
      * the bare hand, and that hand belongs to the first-person view, not to the body clip.
      */
-    private static boolean isOwnBodyUnseen(Entity entity) {
+    static boolean isOwnBodyUnseen(Entity entity) {
         Minecraft minecraft = Minecraft.getMinecraft();
         return entity == minecraft.getRenderViewEntity() && minecraft.gameSettings.thirdPersonView == 0;
     }
