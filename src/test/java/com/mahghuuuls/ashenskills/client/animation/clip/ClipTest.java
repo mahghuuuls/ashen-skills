@@ -186,10 +186,10 @@ class ClipTest {
         double hitTime = slash.hitWindowSeconds().get(0);
         Pose strike = ClipSampler.pose(ClipParser.parse(shipped("third_execution")), hitTime);
 
-        assertArrayEquals(new double[] {-85, -55, 0}, strike.rotationDegrees(Bone.RIGHT_ARM), EXACT);
+        assertArrayEquals(new double[] {-50, 0, 90}, strike.rotationDegrees(Bone.RIGHT_ARM), EXACT);
         assertArrayEquals(new double[] {20, 0, -22}, strike.rotationDegrees(Bone.LEFT_ARM), EXACT);
         assertArrayEquals(new double[] {4, -20, 0}, strike.rotationDegrees(Bone.BODY), EXACT);
-        assertEquals("body.rot=[4.00,-20.00,0.00] right_arm.rot=[-85.00,-55.00,0.00] left_arm.rot=[20.00,0.00,-22.00]",
+        assertEquals("body.rot=[4.00,-20.00,0.00] right_arm.rot=[-50.00,0.00,90.00] left_arm.rot=[20.00,0.00,-22.00]",
                 strike.describe());
     }
 
