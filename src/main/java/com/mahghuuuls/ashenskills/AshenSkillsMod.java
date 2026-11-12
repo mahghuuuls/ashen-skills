@@ -1,6 +1,11 @@
 package com.mahghuuuls.ashenskills;
 
+import com.mahghuuuls.ashenskills.config.Settings;
+import com.mahghuuuls.ashenskills.network.AshenNetwork;
+import com.mahghuuuls.ashenskills.proxy.CommonProxy;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -13,4 +18,15 @@ import org.apache.logging.log4j.Logger;
 public class AshenSkillsMod {
 
     public static final Logger LOGGER = LogManager.getLogger(Tags.MOD_NAME);
+
+    @SidedProxy(
+            clientSide = "com.mahghuuuls.ashenskills.client.ClientProxy",
+            serverSide = "com.mahghuuuls.ashenskills.proxy.CommonProxy")
+    public static CommonProxy proxy;
+
+    @Mod.EventHandler
+    public void preInit(FMLPreInitializationEvent event) {
+        Settings.load(event.getSuggestedConfigurationFile(), LOGGER);
+        AshenNetwork.init();
+    }
 }
