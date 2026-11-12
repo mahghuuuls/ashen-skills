@@ -210,6 +210,16 @@ class ClipTest {
         assertArrayEquals(end.position(Bone.RIGHT_ARM), next.position(Bone.RIGHT_ARM), EXACT);
         assertArrayEquals(end.rotationDegrees(Bone.CAMERA), next.rotationDegrees(Bone.CAMERA), EXACT);
         assertArrayEquals(end.rotationDegrees(Bone.ITEM), next.rotationDegrees(Bone.ITEM), EXACT);
+        // The weapon leaves the game's own hold only after the arm is raised, and is back in that
+        // hold before the arm goes down, so the sword never hangs along a lowered arm.
+        assertArrayEquals(new double[] {0, 0, 0}, ClipSampler.pose(execution, 0.07).rotationDegrees(Bone.ITEM), EXACT);
+        assertTrue(ClipSampler.pose(execution, 0.07).rotationDegrees(Bone.RIGHT_ARM)[0] <= -90);
+        assertArrayEquals(new double[] {0, 0, 0}, ClipSampler.pose(recovery, 0.3).rotationDegrees(Bone.ITEM), EXACT);
+        assertTrue(ClipSampler.pose(recovery, 0.3).rotationDegrees(Bone.RIGHT_ARM)[0] <= -90);
+        assertArrayEquals(new double[] {0, 0, 0},
+                ClipSampler.pose(recovery, recovery.lengthSeconds()).rotationDegrees(Bone.ITEM), EXACT);
+        assertArrayEquals(new double[] {0, 0, 0},
+                ClipSampler.pose(interrupted, interrupted.lengthSeconds()).rotationDegrees(Bone.ITEM), EXACT);
         // At the hit the sword is in line with the arm and lies flat, in both views.
         Pose firstStrike = ClipSampler.pose(execution, slash.hitWindowSeconds().get(0));
         assertArrayEquals(new double[] {90, 90, 0}, firstStrike.rotationDegrees(Bone.ITEM), EXACT);
