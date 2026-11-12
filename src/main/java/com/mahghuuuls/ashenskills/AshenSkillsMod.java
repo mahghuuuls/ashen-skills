@@ -1,11 +1,18 @@
 package com.mahghuuuls.ashenskills;
 
+import com.mahghuuuls.ashenskills.command.AshenSkillsCommand;
 import com.mahghuuuls.ashenskills.config.Settings;
 import com.mahghuuuls.ashenskills.network.AshenNetwork;
 import com.mahghuuuls.ashenskills.proxy.CommonProxy;
+import com.mahghuuuls.ashenskills.skill.BuiltInSkills;
+import com.mahghuuuls.ashenskills.skill.SkillRegistry;
+import com.mahghuuuls.ashenskills.weapon.WeaponTypes;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -28,5 +35,21 @@ public class AshenSkillsMod {
     public void preInit(FMLPreInitializationEvent event) {
         Settings.load(event.getSuggestedConfigurationFile(), LOGGER);
         AshenNetwork.init();
+        WeaponTypes.load(Settings.defaults());
+    }
+
+    @Mod.EventHandler
+    public void init(FMLInitializationEvent event) {
+        BuiltInSkills.registerAll(Settings.defaults());
+    }
+
+    @Mod.EventHandler
+    public void postInit(FMLPostInitializationEvent event) {
+        SkillRegistry.close();
+    }
+
+    @Mod.EventHandler
+    public void serverStarting(FMLServerStartingEvent event) {
+        event.registerServerCommand(new AshenSkillsCommand());
     }
 }

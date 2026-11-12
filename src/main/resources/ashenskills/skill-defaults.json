@@ -147,8 +147,15 @@
     "source": "brief 7.10, 5.28; the rest are proposals"
   },
   "builtInWeaponTypes": {
-    "_about": "Type ids the mod knows without pack configuration. 'sword' covers the five vanilla swords by registry name. The others are Spartan Weaponry melee categories, assigned only when Spartan Weaponry is installed. Ranged and thrown Spartan weapons get no built-in type.",
+    "_about": "Type ids the mod knows without pack configuration. 'sword' covers the five vanilla swords by registry name; 'vanillaItemTypes' lists them. The others are Spartan Weaponry melee categories, assigned only when Spartan Weaponry is installed. Ranged and thrown Spartan weapons get no built-in type.",
     "vanilla": ["sword"],
+    "vanillaItemTypes": {
+      "minecraft:wooden_sword": ["sword"],
+      "minecraft:stone_sword": ["sword"],
+      "minecraft:iron_sword": ["sword"],
+      "minecraft:golden_sword": ["sword"],
+      "minecraft:diamond_sword": ["sword"]
+    },
     "spartan": ["dagger", "parrying_dagger", "longsword", "katana", "saber", "rapier", "greatsword", "hammer", "warhammer", "spear", "halberd", "pike", "lance", "battleaxe", "mace", "glaive", "quarterstaff", "club", "caestus", "scythe"]
   }
 }
