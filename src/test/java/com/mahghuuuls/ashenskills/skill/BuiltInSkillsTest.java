@@ -98,6 +98,7 @@ class BuiltInSkillsTest {
         assertEquals(set("grounded"), slash.allowedStates());
         assertEquals(false, slash.flag(SkillFlag.MOUNTED_ALLOWED));
         assertEquals(false, slash.flag(SkillFlag.JUMP_DURING_EXECUTION));
+        assertEquals(false, slash.flag(SkillFlag.SNEAKING_DURING_SKILL));
     }
 
     /**

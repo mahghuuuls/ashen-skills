@@ -5,6 +5,7 @@ import com.mahghuuuls.ashenskills.client.state.ClientSkillState;
 import com.mahghuuuls.ashenskills.client.state.ClientSkillState.PhaseView;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.util.MovementInput;
 import net.minecraftforge.client.event.InputUpdateEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingEvent;
@@ -14,14 +15,19 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 /**
  * Keeps the own player's client in step with the locks the server reports for the current skill
- * phase: a locked attack button does nothing, and a locked jump does not lift the player. The
+ * phase: a locked attack button does nothing, a locked jump does not lift the player, and under
+ * a sneak lock a sneaking player stands up until the lock ends. The
  * server refuses a locked attack anyway; without this the client would still show an arm swing or
- * crack a block. A jump is the client's own action, so this class is what keeps that rule.
+ * crack a block. Jumping and sneaking are the client's own actions, so this class is what keeps
+ * those rules.
  *
  * <p>While the attack is locked the attack key reads as released, so a button held through a skill
  * must be pressed again afterward; any other action bound to the same key is released with it.
  */
 public final class SkillInputLock {
+
+    /** The share of walking speed the game leaves a sneaking player. */
+    private static final float SNEAK_SLOWING = 0.3F;
 
     private SkillInputLock() {
     }
@@ -77,11 +83,25 @@ public final class SkillInputLock {
         dropAttackPresses();
     }
 
-    /** The jump key. This also stops swimming upward for the length of the lock. */
+    /**
+     * The jump key and the sneak key. A locked jump also stops swimming upward for the length of
+     * the lock. The game has already slowed this tick's walking for sneaking when this runs, so
+     * that slowing is taken back with the sneak.
+     */
     @SubscribeEvent
     public void onMovementInput(InputUpdateEvent event) {
-        if (isJumpLocked()) {
-            event.getMovementInput().jump = false;
+        PhaseView phase = ownPhase();
+        if (phase == null) {
+            return;
+        }
+        MovementInput input = event.getMovementInput();
+        if (phase.jumpLocked) {
+            input.jump = false;
+        }
+        if (phase.sneakLocked && input.sneak) {
+            input.sneak = false;
+            input.moveStrafe /= SNEAK_SLOWING;
+            input.moveForward /= SNEAK_SLOWING;
         }
     }
 

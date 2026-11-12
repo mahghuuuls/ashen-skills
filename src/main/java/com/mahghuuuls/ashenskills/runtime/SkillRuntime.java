@@ -89,8 +89,9 @@ public final class SkillRuntime {
         ActionLock.stopForbiddenUse(session, player);
         Diagnostics.log("ACTIVATION", "player={} skill={} result=accepted cooldownMs={}",
                 player.getName(), skill.id(), cooldownMillis);
-        Diagnostics.log("PHASE", "player={} skill={} phase={} lengthTicks={} cause=activation serverTick={}",
-                player.getName(), skill.id(), session.phase(), session.phaseLengthTicks(), serverTick(player));
+        Diagnostics.log("PHASE", "player={} skill={} phase={} lengthTicks={} cause=activation serverTick={} sneaking={}",
+                player.getName(), skill.id(), session.phase(), session.phaseLengthTicks(), serverTick(player),
+                player.isSneaking());
         messenger.cooldownChanged(player, cooldownMillis, cooldownMillis);
         messenger.phaseChanged(player, session);
     }
@@ -228,9 +229,9 @@ public final class SkillRuntime {
     private void enteredPhase(EntityPlayerMP player, SkillSession session, String cause) {
         applySpeed(player, session.speedFraction());
         ActionLock.stopForbiddenUse(session, player);
-        Diagnostics.log("PHASE", "player={} skill={} phase={} lengthTicks={} cause={} serverTick={}",
+        Diagnostics.log("PHASE", "player={} skill={} phase={} lengthTicks={} cause={} serverTick={} sneaking={}",
                 player.getName(), session.skill().id(), session.phase(), session.phaseLengthTicks(), cause,
-                serverTick(player));
+                serverTick(player), player.isSneaking());
         messenger.phaseChanged(player, session);
     }
 

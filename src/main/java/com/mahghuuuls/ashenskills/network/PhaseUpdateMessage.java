@@ -35,6 +35,7 @@ public final class PhaseUpdateMessage implements IMessage {
     private int lengthTicks;
     private boolean attackLocked;
     private boolean jumpLocked;
+    private boolean sneakLocked;
 
     public PhaseUpdateMessage() {
     }
@@ -42,10 +43,11 @@ public final class PhaseUpdateMessage implements IMessage {
     /**
      * @param attackLocked whether a normal attack by that player has no effect in this phase
      * @param jumpLocked whether that player may not jump in this phase
+     * @param sneakLocked whether that player may not sneak in this phase
      */
     public PhaseUpdateMessage(
             int entityId, String skillId, byte phaseCode, int elapsedTicks, int lengthTicks,
-            boolean attackLocked, boolean jumpLocked) {
+            boolean attackLocked, boolean jumpLocked, boolean sneakLocked) {
         this.entityId = entityId;
         this.skillId = skillId;
         this.phaseCode = phaseCode;
@@ -53,6 +55,7 @@ public final class PhaseUpdateMessage implements IMessage {
         this.lengthTicks = lengthTicks;
         this.attackLocked = attackLocked;
         this.jumpLocked = jumpLocked;
+        this.sneakLocked = sneakLocked;
     }
 
     @Override
@@ -64,6 +67,7 @@ public final class PhaseUpdateMessage implements IMessage {
         lengthTicks = buf.readInt();
         attackLocked = buf.readBoolean();
         jumpLocked = buf.readBoolean();
+        sneakLocked = buf.readBoolean();
     }
 
     @Override
@@ -75,6 +79,7 @@ public final class PhaseUpdateMessage implements IMessage {
         buf.writeInt(lengthTicks);
         buf.writeBoolean(attackLocked);
         buf.writeBoolean(jumpLocked);
+        buf.writeBoolean(sneakLocked);
     }
 
     public static final class Handler implements IMessageHandler<PhaseUpdateMessage, IMessage> {
@@ -83,7 +88,7 @@ public final class PhaseUpdateMessage implements IMessage {
         public IMessage onMessage(PhaseUpdateMessage message, MessageContext ctx) {
             AshenSkillsMod.proxy.onPhaseUpdate(
                     message.entityId, message.skillId, message.phaseCode, message.elapsedTicks, message.lengthTicks,
-                    message.attackLocked, message.jumpLocked);
+                    message.attackLocked, message.jumpLocked, message.sneakLocked);
             return null;
         }
     }

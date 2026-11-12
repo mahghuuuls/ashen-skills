@@ -71,7 +71,7 @@ final class NetworkSkillMessenger implements SkillMessenger {
 
     private static PhaseUpdateMessage phaseMessage(EntityPlayerMP player, SkillSession session) {
         if (session == null) {
-            return new PhaseUpdateMessage(player.getEntityId(), "", PhaseUpdateMessage.NO_PHASE, 0, 0, false, false);
+            return new PhaseUpdateMessage(player.getEntityId(), "", PhaseUpdateMessage.NO_PHASE, 0, 0, false, false, false);
         }
         return new PhaseUpdateMessage(
                 player.getEntityId(),
@@ -80,6 +80,7 @@ final class NetworkSkillMessenger implements SkillMessenger {
                 session.ticksInPhase(),
                 session.phaseLengthTicks(),
                 ActionLock.blocksAttack(session),
-                ActionLock.blocksJump(session));
+                ActionLock.blocksJump(session),
+                ActionLock.blocksSneak(session));
     }
 }

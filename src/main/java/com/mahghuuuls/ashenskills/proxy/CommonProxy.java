@@ -19,10 +19,11 @@ public class CommonProxy {
      * @param phaseCode the phase as the phase message codes it
      * @param attackLocked whether a normal attack by that player has no effect in this phase
      * @param jumpLocked whether that player may not jump in this phase
+     * @param sneakLocked whether that player may not sneak in this phase
      */
     public void onPhaseUpdate(
             int entityId, String skillId, byte phaseCode, int elapsedTicks, int lengthTicks,
-            boolean attackLocked, boolean jumpLocked) {
+            boolean attackLocked, boolean jumpLocked, boolean sneakLocked) {
     }
 
     /**

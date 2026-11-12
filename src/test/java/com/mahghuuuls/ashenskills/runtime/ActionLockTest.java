@@ -51,4 +51,29 @@ class ActionLockTest {
         assertFalse(ActionLock.allowsUse(onlyItemsInRecovery, SkillPhase.RECOVERY, true));
         assertFalse(ActionLock.allowsUse(onlyItemsInRecovery, SkillPhase.EXECUTION, false));
     }
+
+    private static SkillDefinition skillWith(boolean jumpDuringExecution, boolean sneakingDuringSkill) {
+        return SkillDefinition.builder(new ResourceLocation("test", "slash"), ActivationKind.INSTANT)
+                .flag(SkillFlag.JUMP_DURING_EXECUTION, jumpDuringExecution)
+                .flag(SkillFlag.SNEAKING_DURING_SKILL, sneakingDuringSkill)
+                .build();
+    }
+
+    @Test
+    void theJumpLockHoldsOnlyDuringExecutionAndOnlyWhenTheSkillForbidsJumping() {
+        SkillDefinition noJump = skillWith(false, true);
+        assertTrue(ActionLock.locksJump(noJump, SkillPhase.EXECUTION));
+        assertFalse(ActionLock.locksJump(noJump, SkillPhase.RECOVERY));
+        assertFalse(ActionLock.locksJump(noJump, SkillPhase.INTERRUPTED_RECOVERY));
+
+        assertFalse(ActionLock.locksJump(skillWith(true, true), SkillPhase.EXECUTION));
+        assertFalse(ActionLock.blocksJump(null));
+    }
+
+    @Test
+    void theSneakLockFollowsTheSkillAndNotTheJumpRule() {
+        assertTrue(ActionLock.locksSneak(skillWith(true, false)));
+        assertFalse(ActionLock.locksSneak(skillWith(false, true)));
+        assertFalse(ActionLock.blocksSneak(null));
+    }
 }

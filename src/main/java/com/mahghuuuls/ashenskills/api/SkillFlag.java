@@ -19,6 +19,8 @@ public enum SkillFlag {
     ITEM_USE_DURING_RECOVERY("itemUseDuringRecovery"),
     /** Whether the player may jump during execution. */
     JUMP_DURING_EXECUTION("jumpDuringExecution"),
+    /** Whether the player may sneak while the skill runs. When false, a sneaking player stands up for the skill. */
+    SNEAKING_DURING_SKILL("sneakingDuringSkill"),
     /** Whether solid blocks between the user and a target shield that target. */
     SOLID_BLOCKS_OBSTRUCT("solidBlocksObstruct"),
     /** Whether the weapon's damage enchantments (Sharpness, Smite, Bane of Arthropods) add to a hit. */

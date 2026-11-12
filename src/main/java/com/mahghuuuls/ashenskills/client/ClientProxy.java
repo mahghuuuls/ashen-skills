@@ -41,12 +41,13 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void onPhaseUpdate(
             final int entityId, final String skillId, final byte phaseCode, final int elapsedTicks, final int lengthTicks,
-            final boolean attackLocked, final boolean jumpLocked) {
+            final boolean attackLocked, final boolean jumpLocked, final boolean sneakLocked) {
         Minecraft.getMinecraft().addScheduledTask(new Runnable() {
             @Override
             public void run() {
                 ClientSkillState.setPhase(
-                        entityId, skillId, phaseCode, elapsedTicks, lengthTicks, attackLocked, jumpLocked);
+                        entityId, skillId, phaseCode, elapsedTicks, lengthTicks, attackLocked, jumpLocked,
+                        sneakLocked);
             }
         });
     }

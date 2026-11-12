@@ -4,6 +4,7 @@ import com.mahghuuuls.ashenskills.client.animation.PlaybackRegistry;
 import com.mahghuuuls.ashenskills.client.animation.clip.Bone;
 import com.mahghuuuls.ashenskills.client.animation.clip.Pose;
 import com.mahghuuuls.ashenskills.client.animation.clip.View;
+import com.mahghuuuls.ashenskills.client.state.ClientSkillState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.model.ModelBiped;
@@ -31,12 +32,20 @@ public final class ThirdPersonPoseApplier {
     /**
      * Called before the game poses a biped model. While a clip plays for a player, the game's own
      * attack swing is left out: it would twist the body and move the shoulders under the clip, and
-     * show through on every bone the clip does not name. The game sets the swing again for each draw.
+     * show through on every bone the clip does not name. The game sets the swing, and the sneak
+     * pose, again for each draw.
      */
     public static void beforeGamePose(ModelBiped model, Entity entity) {
-        if (model.swingProgress > 0.0F && entity instanceof AbstractClientPlayer && !isOwnBodyUnseen(entity)
-                && PlaybackRegistry.isPlaying(entity.getEntityId())) {
+        if (!(entity instanceof AbstractClientPlayer) || isOwnBodyUnseen(entity)) {
+            return;
+        }
+        if (model.swingProgress > 0.0F && PlaybackRegistry.isPlaying(entity.getEntityId())) {
             model.swingProgress = 0.0F;
+        }
+        // A player under a sneak lock stands up, but others learn it a moment late; until then the
+        // model would mix the sneak pose with a clip made for a standing body.
+        if (model.isSneak && ClientSkillState.isSneakLocked(entity.getEntityId())) {
+            model.isSneak = false;
         }
     }
 
