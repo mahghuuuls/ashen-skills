@@ -9,13 +9,18 @@ import java.util.Map;
 import net.minecraft.util.ResourceLocation;
 
 /**
- * Which skills exist. Skills are added while the game loads and the set is then closed, so a
- * skill id means the same thing for the whole run.
+ * Which skills exist, and with which values. Skills are added while the game loads and the set is
+ * then closed, so a skill id means the same thing for the whole run. Configuration can change a
+ * skill's values but never which skills there are.
  */
 public final class SkillRegistry {
 
     private static final Map<ResourceLocation, SkillDefinition> SKILLS = new LinkedHashMap<>();
     private static final Map<ResourceLocation, SkillBehavior> BEHAVIORS = new LinkedHashMap<>();
+    /** The skills with this installation's configured values; null until configuration was read. */
+    private static Map<ResourceLocation, SkillDefinition> configured;
+    /** On a client playing on a server: the skills with that server's values. Otherwise null. */
+    private static volatile Map<ResourceLocation, SkillDefinition> fromServer;
     private static boolean closed;
 
     private SkillRegistry() {
@@ -45,9 +50,42 @@ public final class SkillRegistry {
         closed = true;
     }
 
-    /** The skill with that id, or null when no installed mod registered it. */
+    /** The skills exactly as the mods registered them, by id, before any configuration. */
+    public static Map<ResourceLocation, SkillDefinition> registered() {
+        return Collections.unmodifiableMap(SKILLS);
+    }
+
+    /**
+     * Sets the values this installation's configuration gives the skills. Called once, when the
+     * game has loaded.
+     *
+     * @param withConfiguredValues every registered skill, by id
+     */
+    public static void useConfigured(Map<ResourceLocation, SkillDefinition> withConfiguredValues) {
+        configured = new LinkedHashMap<>(withConfiguredValues);
+    }
+
+    /** On a client: the values of the server it plays on take the place of its own. */
+    public static void useServerValues(Map<ResourceLocation, SkillDefinition> withServerValues) {
+        fromServer = new LinkedHashMap<>(withServerValues);
+    }
+
+    /** On a client that left a server: back to its own values. */
+    public static void restoreOwnValues() {
+        fromServer = null;
+    }
+
+    /** The skill with that id and its values in force, or null when no installed mod registered it. */
     public static SkillDefinition get(ResourceLocation id) {
-        return SKILLS.get(id);
+        return inForce().get(id);
+    }
+
+    private static Map<ResourceLocation, SkillDefinition> inForce() {
+        Map<ResourceLocation, SkillDefinition> server = fromServer;
+        if (server != null) {
+            return server;
+        }
+        return configured != null ? configured : SKILLS;
     }
 
     /** What the skill with that id does, or null when no installed mod registered it. */
@@ -56,6 +94,6 @@ public final class SkillRegistry {
     }
 
     public static Collection<SkillDefinition> all() {
-        return Collections.unmodifiableCollection(SKILLS.values());
+        return Collections.unmodifiableCollection(inForce().values());
     }
 }

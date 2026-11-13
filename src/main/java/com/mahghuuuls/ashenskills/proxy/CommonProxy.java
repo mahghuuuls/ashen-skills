@@ -1,6 +1,7 @@
 package com.mahghuuuls.ashenskills.proxy;
 
 import com.mahghuuuls.ashenskills.api.SkillPhase;
+import com.mahghuuuls.ashenskills.config.SettingsView;
 
 /**
  * The only door from shared code to client-only code. Shared code calls methods declared here; the
@@ -46,6 +47,10 @@ public class CommonProxy {
      * @param phase for a pin, the phase whose clip to hold; otherwise null
      */
     public void onPoseControl(byte action, String skillId, SkillPhase phase, double seconds, int cameraView) {
+    }
+
+    /** The pack configuration of the server this client joined. Called on the network thread. */
+    public void onSettingsView(SettingsView view) {
     }
 
     /** The own player's cooldown as the server reports it. Called on the network thread. */

@@ -11,6 +11,8 @@ import com.mahghuuuls.ashenskills.client.input.SkillKeyHandler;
 import com.mahghuuuls.ashenskills.client.render.FirstPersonSkillRenderer;
 import com.mahghuuuls.ashenskills.client.state.ClientSkillState;
 import com.mahghuuuls.ashenskills.client.state.ClientWorldWatch;
+import com.mahghuuuls.ashenskills.client.state.ServerSettings;
+import com.mahghuuuls.ashenskills.config.SettingsView;
 import com.mahghuuuls.ashenskills.proxy.CommonProxy;
 import net.minecraft.client.Minecraft;
 
@@ -25,6 +27,17 @@ public class ClientProxy extends CommonProxy {
         SkillInputLock.register();
         FirstPersonSkillRenderer.register();
         CameraEffects.register();
+        ServerSettings.register();
+    }
+
+    @Override
+    public void onSettingsView(final SettingsView view) {
+        Minecraft.getMinecraft().addScheduledTask(new Runnable() {
+            @Override
+            public void run() {
+                ServerSettings.received(view);
+            }
+        });
     }
 
     @Override

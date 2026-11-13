@@ -92,6 +92,35 @@ public final class DefaultsData {
         return Collections.unmodifiableMap(types);
     }
 
+    /** Every weapon type id the mod knows without pack configuration, whether or not its source mod is installed. */
+    public Set<String> builtInTypeIds() {
+        JsonObject builtIn = root.getAsJsonObject("builtInWeaponTypes");
+        Set<String> ids = new LinkedHashSet<>(strings(builtIn.getAsJsonArray("vanilla")));
+        ids.addAll(strings(builtIn.getAsJsonArray("spartan")));
+        return Collections.unmodifiableSet(ids);
+    }
+
+    /** The type ids of the Spartan Weaponry melee categories. */
+    public Set<String> spartanTypeIds() {
+        return strings(root.getAsJsonObject("builtInWeaponTypes").getAsJsonArray("spartan"));
+    }
+
+    /**
+     * The lowest and highest value a pack may give a per-skill number, or null when the file sets
+     * no limits for it. All speed values share one range.
+     *
+     * @param numberName the number's name in configuration, for example "cooldown"
+     */
+    public double[] skillRange(String numberName) {
+        JsonObject ranges = root.getAsJsonObject("perSkillRanges");
+        String key = numberName.endsWith("Speed") ? "speedFractions" : numberName;
+        if (!ranges.has(key)) {
+            return null;
+        }
+        JsonArray range = ranges.getAsJsonArray(key);
+        return new double[] {range.get(0).getAsDouble(), range.get(1).getAsDouble()};
+    }
+
     private static Set<String> strings(JsonArray array) {
         Set<String> values = new LinkedHashSet<>();
         for (JsonElement element : array) {

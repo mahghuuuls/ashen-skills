@@ -24,6 +24,8 @@ public final class AshenNetwork {
         channel.registerMessage(CooldownStateMessage.Handler.class, CooldownStateMessage.class, 3, Side.CLIENT);
         channel.registerMessage(PoseControlMessage.Handler.class, PoseControlMessage.class, 4, Side.CLIENT);
         channel.registerMessage(EffectCueMessage.Handler.class, EffectCueMessage.class, 5, Side.CLIENT);
+        channel.registerMessage(SettingsViewMessage.Handler.class, SettingsViewMessage.class, 6, Side.CLIENT);
+        SettingsViewMessage.sendAtLogin();
     }
 
     public static SimpleNetworkWrapper channel() {

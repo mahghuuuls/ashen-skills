@@ -89,6 +89,16 @@ public final class SkillDefinition {
         return value;
     }
 
+    /** The numbers this skill has, by key. Not every skill has every optional number. */
+    public Map<SkillNumber, Double> numbers() {
+        return Collections.unmodifiableMap(numbers);
+    }
+
+    /** The yes-or-no rules this skill has, by key. */
+    public Map<SkillFlag, Boolean> flags() {
+        return Collections.unmodifiableMap(flags);
+    }
+
     /**
      * Configuration names of the required numbers and rules this skill still lacks. Empty when
      * complete.

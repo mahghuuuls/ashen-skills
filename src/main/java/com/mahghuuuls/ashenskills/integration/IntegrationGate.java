@@ -2,32 +2,46 @@ package com.mahghuuuls.ashenskills.integration;
 
 import com.mahghuuuls.ashenskills.config.SettingKey;
 import com.mahghuuuls.ashenskills.config.Settings;
+import net.minecraftforge.fml.common.Loader;
 import org.apache.logging.log4j.Logger;
 
 /**
  * Decides, once while the game loads, what stands behind each gateway: the code for an installed
  * mod, or the behavior for its absence. Code that talks to another mod must be named here only as
  * text and loaded with {@link #implementationOr} after that mod was found, so this mod runs
- * without any of them. No other mod is connected yet: every gateway gets the absent behavior.
+ * without any of them.
  */
 public final class IntegrationGate {
 
+    private static final String SPARTAN_MOD_ID = "spartanweaponry";
+    private static final String SPARTAN_CATEGORIES = "com.mahghuuuls.ashenskills.integration.spartan.SpartanCategories";
+
     private static ResourceGateway resources;
+    private static WeaponCategorySource weaponCategories;
 
     private IntegrationGate() {
     }
 
     /** Called once while the game loads, after the settings. */
     public static void decide(Logger logger) {
+        // No stamina or mana mod is connected yet.
         resources = new ResourceGateway(
                 ResourcePool.ABSENT,
                 ResourcePool.ABSENT,
                 () -> Settings.general().getBoolean(SettingKey.WAIVE_ABSENT_RESOURCE_COSTS));
-        logger.info("Resource mods: stamina=absent mana=absent");
+        weaponCategories = implementationOr(
+                Loader.isModLoaded(SPARTAN_MOD_ID), SPARTAN_CATEGORIES, WeaponCategorySource.class,
+                WeaponCategorySource.NONE, logger);
+        logger.info("Other mods: stamina=absent mana=absent spartanWeaponry={}",
+                weaponCategories == WeaponCategorySource.NONE ? "absent" : "present");
     }
 
     public static ResourceGateway resources() {
         return resources;
+    }
+
+    public static WeaponCategorySource weaponCategories() {
+        return weaponCategories;
     }
 
     /**
