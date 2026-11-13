@@ -1,5 +1,6 @@
 package com.mahghuuuls.ashenskills.proxy;
 
+import com.mahghuuuls.ashenskills.ashenforge.ForgeContainer;
 import com.mahghuuuls.ashenskills.api.SkillPhase;
 import com.mahghuuuls.ashenskills.config.SettingsView;
 
@@ -12,6 +13,11 @@ public class CommonProxy {
 
     /** Sets up client-only parts (key bindings, client event handlers). */
     public void init() {
+    }
+
+    /** The screens of an open Ashen Forge, on the client; nothing on a dedicated server. */
+    public Object forgeScreen(ForgeContainer forge) {
+        return null;
     }
 
     /**

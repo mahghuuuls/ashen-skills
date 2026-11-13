@@ -33,6 +33,9 @@ public class AshenSkillsMod {
 
     public static final Logger LOGGER = LogManager.getLogger(Tags.MOD_NAME);
 
+    @Mod.Instance(Tags.MOD_ID)
+    public static AshenSkillsMod instance;
+
     @SidedProxy(
             clientSide = "com.mahghuuuls.ashenskills.client.ClientProxy",
             serverSide = "com.mahghuuuls.ashenskills.proxy.CommonProxy")
@@ -50,11 +53,13 @@ public class AshenSkillsMod {
         WeaponTypes.load(Settings.defaults().builtInItemTypes(), IntegrationGate.weaponCategories());
         SkillDamage.setCritGateway(IntegrationGate.crits());
         SkillRuntimeHooks.install();
+        // Before the game loads item models: every Ash icon is chosen from the skills known then.
+        BuiltInSkills.registerAll(Settings.defaults());
     }
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
-        BuiltInSkills.registerAll(Settings.defaults());
+        AshenContent.init();
         proxy.init();
     }
 

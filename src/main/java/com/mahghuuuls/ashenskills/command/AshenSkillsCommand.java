@@ -1,5 +1,14 @@
 package com.mahghuuuls.ashenskills.command;
 
+import com.mahghuuuls.ashenskills.ashenforge.AshenForgeTile;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.TreeSet;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraftforge.common.ForgeHooks;
 import com.mahghuuuls.ashenskills.AshenSkillsMod;
 import com.mahghuuuls.ashenskills.api.SkillPhase;
 import com.mahghuuuls.ashenskills.network.AshenNetwork;
@@ -79,6 +88,8 @@ public final class AshenSkillsCommand extends CommandBase {
             String result = "clear cooldown player=" + player.getName() + " hadRemainingMs=" + had;
             reply(sender, result);
             audit(sender, result);
+        } else if ("forge".equals(args[0]) && (args.length == 1 || args.length == 4)) {
+            reply(sender, describeForge(sender, args));
         } else if ("pose".equals(args[0]) && args.length >= 3) {
             EntityPlayerMP player = getPlayer(server, sender, args[1]);
             AshenNetwork.channel().sendTo(poseControl(args), player);
@@ -112,6 +123,46 @@ public final class AshenSkillsCommand extends CommandBase {
             return PoseControlMessage.view(parseInt(args[3], 0, 2));
         }
         throw new WrongUsageException(USAGE);
+    }
+
+    /** {@code forge}: the Forge the operator looks at; {@code forge <x> <y> <z>}: the Forge at that place. Changes nothing. */
+    private static String describeForge(ICommandSender sender, String[] args) throws CommandException {
+        BlockPos pos;
+        if (args.length == 4) {
+            pos = parseBlockPos(sender, args, 1, false);
+        } else {
+            RayTraceResult hit = ForgeHooks.rayTraceEyes(getCommandSenderAsPlayer(sender), 6.0);
+            if (hit == null || hit.typeOfHit != RayTraceResult.Type.BLOCK) {
+                return "forge result=NO_BLOCK_IN_VIEW";
+            }
+            pos = hit.getBlockPos();
+        }
+        String place = pos.getX() + "," + pos.getY() + "," + pos.getZ();
+        if (!sender.getEntityWorld().isBlockLoaded(pos)) {
+            return "forge pos=" + place + " result=NOT_LOADED";
+        }
+        TileEntity tile = sender.getEntityWorld().getTileEntity(pos);
+        if (!(tile instanceof AshenForgeTile)) {
+            return "forge pos=" + place + " result=NOT_A_FORGE";
+        }
+        AshenForgeTile forge = (AshenForgeTile) tile;
+        int used = 0;
+        int ashes = 0;
+        for (int slot = 0; slot < forge.ashes().getSlots(); slot++) {
+            ItemStack stack = forge.ashes().getStackInSlot(slot);
+            if (!stack.isEmpty()) {
+                used++;
+                ashes += stack.getCount();
+            }
+        }
+        return "forge pos=" + place + " slots=" + forge.ashes().getSlots() + " slotsUsed=" + used + " ashes=" + ashes
+                + " distinctSkills=" + new TreeSet<>(withoutNulls(forge.storedSkillIds()));
+    }
+
+    private static List<String> withoutNulls(List<String> ids) {
+        List<String> named = new ArrayList<>(ids);
+        named.removeAll(Collections.<String>singleton(null));
+        return named;
     }
 
     private static SkillPhase phaseNamed(String name) {

@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "ashenskills:ashen_forge"
+    },
+    "facing=south": {
+      "model": "ashenskills:ashen_forge",
+      "y": 180
+    },
+    "facing=east": {
+      "model": "ashenskills:ashen_forge",
+      "y": 90
+    },
+    "facing=west": {
+      "model": "ashenskills:ashen_forge",
+      "y": 270
+    }
+  }
+}

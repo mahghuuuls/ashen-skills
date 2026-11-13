@@ -1,5 +1,7 @@
 package com.mahghuuuls.ashenskills.client;
 
+import com.mahghuuuls.ashenskills.ashenforge.ForgeContainer;
+import com.mahghuuuls.ashenskills.client.gui.ForgeScreen;
 import com.mahghuuuls.ashenskills.api.SkillPhase;
 import com.mahghuuuls.ashenskills.client.animation.ClipLibrary;
 import com.mahghuuuls.ashenskills.client.animation.PoseControls;
@@ -28,6 +30,11 @@ public class ClientProxy extends CommonProxy {
         FirstPersonSkillRenderer.register();
         CameraEffects.register();
         ServerSettings.register();
+    }
+
+    @Override
+    public Object forgeScreen(ForgeContainer forge) {
+        return new ForgeScreen(forge);
     }
 
     @Override

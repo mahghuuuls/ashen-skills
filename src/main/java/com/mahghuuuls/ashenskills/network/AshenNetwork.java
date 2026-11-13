@@ -12,6 +12,7 @@ public final class AshenNetwork {
 
     private static SimpleNetworkWrapper channel;
     private static SkillInputMessage.Receiver inputReceiver;
+    private static ForgeActionMessage.Receiver forgeReceiver;
 
     private AshenNetwork() {
     }
@@ -25,6 +26,7 @@ public final class AshenNetwork {
         channel.registerMessage(PoseControlMessage.Handler.class, PoseControlMessage.class, 4, Side.CLIENT);
         channel.registerMessage(EffectCueMessage.Handler.class, EffectCueMessage.class, 5, Side.CLIENT);
         channel.registerMessage(SettingsViewMessage.Handler.class, SettingsViewMessage.class, 6, Side.CLIENT);
+        channel.registerMessage(ForgeActionMessage.Handler.class, ForgeActionMessage.class, 7, Side.SERVER);
         SettingsViewMessage.sendAtLogin();
     }
 
@@ -35,6 +37,17 @@ public final class AshenNetwork {
     /** Names who handles skill key input on the server. */
     public static void setInputReceiver(SkillInputMessage.Receiver receiver) {
         inputReceiver = receiver;
+    }
+
+    /** Names who handles the requests of an open Ashen Forge screen on the server. */
+    public static void setForgeReceiver(ForgeActionMessage.Receiver receiver) {
+        forgeReceiver = receiver;
+    }
+
+    static void deliverForgeAction(EntityPlayerMP player, int windowId, byte action, String skillId) {
+        if (forgeReceiver != null) {
+            forgeReceiver.onForgeAction(player, windowId, action, skillId);
+        }
     }
 
     static void deliverInput(EntityPlayerMP player, byte action) {
