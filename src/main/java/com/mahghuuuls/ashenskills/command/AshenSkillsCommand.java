@@ -18,6 +18,7 @@ import com.mahghuuuls.ashenskills.runtime.SkillRuntime;
 import com.mahghuuuls.ashenskills.runtime.SkillRuntimeHooks;
 import com.mahghuuuls.ashenskills.runtime.SkillSession;
 import com.mahghuuuls.ashenskills.weapon.AttachedSkill;
+import com.mahghuuuls.ashenskills.weapon.SkillTag;
 import com.mahghuuuls.ashenskills.weapon.WeaponTypes;
 import java.util.Collections;
 import java.util.List;
@@ -155,8 +156,12 @@ public final class AshenSkillsCommand extends CommandBase {
                 ashes += stack.getCount();
             }
         }
+        ItemStack weapon = forge.weapon();
+        String weaponSkill = SkillTag.getSkillId(weapon);
         return "forge pos=" + place + " slots=" + forge.ashes().getSlots() + " slotsUsed=" + used + " ashes=" + ashes
-                + " distinctSkills=" + new TreeSet<>(withoutNulls(forge.storedSkillIds()));
+                + " distinctSkills=" + new TreeSet<>(withoutNulls(forge.storedSkillIds()))
+                + " weapon=" + (weapon.isEmpty() ? "none" : weapon.getItem().getRegistryName())
+                + " weaponSkill=" + (weaponSkill == null ? "none" : weaponSkill);
     }
 
     private static List<String> withoutNulls(List<String> ids) {

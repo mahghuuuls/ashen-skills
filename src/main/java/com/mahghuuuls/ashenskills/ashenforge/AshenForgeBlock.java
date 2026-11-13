@@ -25,7 +25,7 @@ import net.minecraft.world.World;
 
 /**
  * The Ashen Forge block: an anvil shape, not a full cube. Using it opens the Forge screens;
- * breaking it drops itself and every stored Ash.
+ * breaking it drops itself, every stored Ash, and the weapon it holds.
  */
 public final class AshenForgeBlock extends Block {
 
@@ -76,9 +76,9 @@ public final class AshenForgeBlock extends Block {
     public void breakBlock(World world, BlockPos pos, IBlockState state) {
         TileEntity tile = world.getTileEntity(pos);
         if (tile instanceof AshenForgeTile) {
-            ((AshenForgeTile) tile).dropAshes(world, pos);
+            ((AshenForgeTile) tile).dropContents(world, pos);
         }
-        // Removes the tile entity. Every open Forge screen then closes, which returns each weapon.
+        // Removes the tile entity. Every open Forge screen then closes.
         super.breakBlock(world, pos, state);
     }
 

@@ -68,8 +68,9 @@ public final class AshenContent {
     @SubscribeEvent
     public static void registerRecipes(RegistryEvent.Register<IRecipe> event) {
         event.getRegistry().register(new ShapedOreRecipe(null, new ItemStack(FORGE_ITEM),
-                "IOI", "OAO", "SSS",
+                "IBI", "OAO", "SSS",
                 'I', Items.IRON_INGOT,
+                'B', Items.BLAZE_ROD,
                 'O', Blocks.OBSIDIAN,
                 // an anvil in any state of damage
                 'A', new ItemStack(Blocks.ANVIL, 1, OreDictionary.WILDCARD_VALUE),

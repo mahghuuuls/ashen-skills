@@ -1,6 +1,8 @@
 package com.mahghuuuls.ashenskills.client;
 
+import com.mahghuuuls.ashenskills.ashenforge.AshenForgeTile;
 import com.mahghuuuls.ashenskills.ashenforge.ForgeContainer;
+import com.mahghuuuls.ashenskills.client.gui.ForgeNotices;
 import com.mahghuuuls.ashenskills.client.gui.ForgeScreen;
 import com.mahghuuuls.ashenskills.client.hud.SkillHud;
 import com.mahghuuuls.ashenskills.api.SkillPhase;
@@ -12,12 +14,14 @@ import com.mahghuuuls.ashenskills.client.hud.RefusalDisplay;
 import com.mahghuuuls.ashenskills.client.input.SkillInputLock;
 import com.mahghuuuls.ashenskills.client.input.SkillKeyHandler;
 import com.mahghuuuls.ashenskills.client.render.FirstPersonSkillRenderer;
+import com.mahghuuuls.ashenskills.client.render.ForgeRenderer;
 import com.mahghuuuls.ashenskills.client.state.ClientSkillState;
 import com.mahghuuuls.ashenskills.client.state.ClientWorldWatch;
 import com.mahghuuuls.ashenskills.client.state.ServerSettings;
 import com.mahghuuuls.ashenskills.config.SettingsView;
 import com.mahghuuuls.ashenskills.proxy.CommonProxy;
 import net.minecraft.client.Minecraft;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
 
 /** Client side of {@link CommonProxy}. Loaded by name on the physical client only. */
 public class ClientProxy extends CommonProxy {
@@ -32,6 +36,8 @@ public class ClientProxy extends CommonProxy {
         CameraEffects.register();
         ServerSettings.register();
         SkillHud.register();
+        ForgeNotices.register();
+        ClientRegistry.bindTileEntitySpecialRenderer(AshenForgeTile.class, new ForgeRenderer());
     }
 
     @Override

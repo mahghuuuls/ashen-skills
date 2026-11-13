@@ -23,7 +23,7 @@ public final class ForgeRules {
     }
 
     /**
-     * The skills to offer for the weapon in the input: each skill once, however many Ashes of it are
+     * The skills to offer for the weapon the Forge holds: each skill once, however many Ashes of it are
      * stored, in the order of the storage.
      *
      * @param storedSkillIds the skill id of every stored Ash stack; null for an Ash that names none
@@ -45,8 +45,8 @@ public final class ForgeRules {
      * @return null when the skill is attached, otherwise the first reason why not
      */
     public static Refusal refusalToAttach(
-            boolean weaponInInput, boolean skillExists, boolean skillFitsWeapon, boolean ashOfSkillStored) {
-        if (!weaponInInput) {
+            boolean weaponInSlot, boolean skillExists, boolean skillFitsWeapon, boolean ashOfSkillStored) {
+        if (!weaponInSlot) {
             return Refusal.NO_WEAPON;
         }
         if (!skillExists) {
