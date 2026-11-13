@@ -111,13 +111,18 @@ public final class ClientSkillState {
     }
 
     public static void setOwnCooldown(long remainingMillis, long lengthMillis) {
-        cooldownEndsAtMillis = System.currentTimeMillis() + remainingMillis;
+        cooldownEndsAtMillis = steadyMillis() + remainingMillis;
         cooldownLengthMillis = lengthMillis;
         Diagnostics.log("CLIENT_COOLDOWN", "remainingMs={} lengthMs={}", remainingMillis, lengthMillis);
     }
 
     public static long ownCooldownRemainingMillis() {
-        return Math.max(0, cooldownEndsAtMillis - System.currentTimeMillis());
+        return Math.max(0, cooldownEndsAtMillis - steadyMillis());
+    }
+
+    /** A clock that only runs forward, so a change of the computer's time does not move the cooldown. */
+    private static long steadyMillis() {
+        return System.nanoTime() / 1_000_000;
     }
 
     public static long ownCooldownLengthMillis() {
