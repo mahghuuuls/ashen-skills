@@ -15,10 +15,15 @@ public final class IntegrationGate {
 
     private static final String CRITWORKS_MOD_ID = "critworks";
     private static final String CRITWORKS_CRITS = "com.mahghuuuls.ashenskills.integration.critworks.CritworksCrits";
+    private static final String JASS_MOD_ID = "jass";
+    private static final String JASS_STAMINA = "com.mahghuuuls.ashenskills.integration.jass.JassStamina";
+    private static final String JAWMS_MOD_ID = "jawms";
+    private static final String JAWMS_MANA = "com.mahghuuuls.ashenskills.integration.jawms.JawmsMana";
     private static final String SPARTAN_MOD_ID = "spartanweaponry";
     private static final String SPARTAN_CATEGORIES = "com.mahghuuuls.ashenskills.integration.spartan.SpartanCategories";
 
     private static ResourceGateway resources;
+    private static PreparationRegen preparationRegen;
     private static WeaponCategorySource weaponCategories;
     private static CritGateway crits;
 
@@ -27,23 +32,32 @@ public final class IntegrationGate {
 
     /** Called once while the game loads, after the settings. */
     public static void decide(Logger logger) {
-        // No stamina or mana mod is connected yet.
+        ResourcePool stamina = implementationOr(
+                Loader.isModLoaded(JASS_MOD_ID), JASS_STAMINA, ResourcePool.class, ResourcePool.ABSENT, logger);
+        ResourcePool mana = implementationOr(
+                Loader.isModLoaded(JAWMS_MOD_ID), JAWMS_MANA, ResourcePool.class, ResourcePool.ABSENT, logger);
         resources = new ResourceGateway(
-                ResourcePool.ABSENT,
-                ResourcePool.ABSENT,
-                () -> Settings.general().getBoolean(SettingKey.WAIVE_ABSENT_RESOURCE_COSTS));
+                stamina, mana, () -> Settings.general().getBoolean(SettingKey.WAIVE_ABSENT_RESOURCE_COSTS));
+        // The stamina mod is also the one that knows about stamina regeneration.
+        preparationRegen = stamina instanceof PreparationRegen ? (PreparationRegen) stamina : PreparationRegen.NONE;
         weaponCategories = implementationOr(
                 Loader.isModLoaded(SPARTAN_MOD_ID), SPARTAN_CATEGORIES, WeaponCategorySource.class,
                 WeaponCategorySource.NONE, logger);
         crits = implementationOr(
                 Loader.isModLoaded(CRITWORKS_MOD_ID), CRITWORKS_CRITS, CritGateway.class, CritGateway.NONE, logger);
-        logger.info("Other mods: stamina=absent mana=absent spartanWeaponry={} critworks={}",
+        logger.info("Other mods: stamina={} mana={} spartanWeaponry={} critworks={}",
+                stamina == ResourcePool.ABSENT ? "absent" : "present",
+                mana == ResourcePool.ABSENT ? "absent" : "present",
                 weaponCategories == WeaponCategorySource.NONE ? "absent" : "present",
                 crits == CritGateway.NONE ? "absent" : "present");
     }
 
     public static ResourceGateway resources() {
         return resources;
+    }
+
+    public static PreparationRegen preparationRegen() {
+        return preparationRegen;
     }
 
     public static WeaponCategorySource weaponCategories() {

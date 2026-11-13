@@ -39,6 +39,19 @@ class UseCostsTest {
     }
 
     @Test
+    void manaIsAWholeNumberAndACostAboveZeroNeverBecomesFree() {
+        assertEquals(10.0, UseCosts.manaCost(10, 100, 0), EXACT);
+        assertEquals(5.0, UseCosts.manaCost(10, 100, 100), EXACT);
+        // 10 * 100 / 125 = 8; 5 * 100 / 300 = 1.67 -> 2; 3 * 100 / 250 = 1.2 -> 1.
+        assertEquals(8.0, UseCosts.manaCost(10, 100, 25), EXACT);
+        assertEquals(2.0, UseCosts.manaCost(5, 100, 200), EXACT);
+        assertEquals(1.0, UseCosts.manaCost(3, 100, 150), EXACT);
+        // 1 * 100 / 10100 = 0.0099 -> the minimum of 1.
+        assertEquals(1.0, UseCosts.manaCost(1, 100, 10000), EXACT);
+        assertEquals(0.0, UseCosts.manaCost(0, 100, 0), EXACT);
+    }
+
+    @Test
     void everyFailedPaymentHasAReasonThePlayerSeesAndAPaidOneHasNone() {
         assertNull(UseCosts.refusalFor(PaymentResult.PAID));
         assertEquals(RefusalReason.NO_STAMINA_SYSTEM, UseCosts.refusalFor(PaymentResult.STAMINA_MOD_MISSING));

@@ -18,12 +18,8 @@ class IntegrationGateTest {
         }
 
         @Override
-        public boolean allowsSpending(EntityPlayer player, double amount) {
-            return true;
-        }
-
-        @Override
-        public void spend(EntityPlayer player, double amount) {
+        public Claim claim(EntityPlayer player, double amount) {
+            return Claim.FREE;
         }
     }
 

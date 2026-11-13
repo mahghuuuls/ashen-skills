@@ -99,13 +99,12 @@ public final class SkillRuntime {
         PaymentPlan plan = resources.quote(
                 UseCosts.resourceCost(skill.number(SkillNumber.STAMINA_COST), scalePoints,
                         SkillAttributes.points(player, SkillAttributes.SKILL_STAMINA_EFFICIENCY)),
-                UseCosts.resourceCost(skill.number(SkillNumber.MANA_COST), scalePoints,
+                UseCosts.manaCost(skill.number(SkillNumber.MANA_COST), scalePoints,
                         SkillAttributes.points(player, SkillAttributes.SKILL_MANA_EFFICIENCY)));
         PaymentResult result = resources.pay(player, plan);
-        Diagnostics.log("PAYMENT", "player={} skill={} staminaTaken={} manaTaken={} result={}",
-                player.getName(), skill.id(),
-                result == PaymentResult.PAID ? plan.stamina() : 0.0, result == PaymentResult.PAID ? plan.mana() : 0.0,
-                result);
+        // What was asked of the stamina and mana mods. They apply their own rules to it.
+        Diagnostics.log("PAYMENT", "player={} skill={} staminaAsked={} manaAsked={} result={}",
+                player.getName(), skill.id(), plan.stamina(), plan.mana(), result);
         return UseCosts.refusalFor(result);
     }
 

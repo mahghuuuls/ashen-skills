@@ -13,23 +13,45 @@ public interface ResourcePool {
         }
 
         @Override
-        public boolean allowsSpending(EntityPlayer player, double amount) {
-            return false;
-        }
-
-        @Override
-        public void spend(EntityPlayer player, double amount) {
+        public Claim claim(EntityPlayer player, double amount) {
+            return null;
         }
     };
 
+    /** False also after the owning mod failed; from then on its cost is treated as that of an absent mod. */
     boolean isInstalled();
 
     /**
-     * Whether the owning mod lets the player spend this much now, by that mod's own rules (it may
-     * allow going into debt).
+     * Asks the owning mod whether the player may spend this much now, by that mod's own rules (it
+     * may allow going into debt, or make the use free). Nothing is taken yet.
+     *
+     * @return the claim to take or to release, or null when the owning mod refuses
      */
-    boolean allowsSpending(EntityPlayer player, double amount);
+    Claim claim(EntityPlayer player, double amount);
 
-    /** Takes the amount. Only called after {@link #allowsSpending} said yes for the same amount. */
-    void spend(EntityPlayer player, double amount);
+    /** An accepted request to spend. Exactly one of the two methods is called, once. */
+    interface Claim {
+
+        /** A claim that costs nothing. */
+        Claim FREE = new Claim() {
+            @Override
+            public boolean take() {
+                return true;
+            }
+
+            @Override
+            public void release() {
+            }
+        };
+
+        /**
+         * Takes what was claimed.
+         *
+         * @return false when the owning mod took nothing after all
+         */
+        boolean take();
+
+        /** Gives the claim up. The resource is as if it was never asked for. */
+        void release();
+    }
 }

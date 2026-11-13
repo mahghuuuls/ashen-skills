@@ -41,18 +41,26 @@ public final class ResourceGateway {
         if (plan.blockedBy() != null) {
             return plan.blockedBy();
         }
-        if (plan.stamina() > 0 && !stamina.allowsSpending(player, plan.stamina())) {
+        // Stamina can be held without being taken; mana cannot. So: hold the stamina, take the mana,
+        // and only then take the stamina. When the mana fails, the held stamina is given back.
+        ResourcePool.Claim staminaClaim = plan.stamina() > 0 ? stamina.claim(player, plan.stamina()) : ResourcePool.Claim.FREE;
+        if (staminaClaim == null) {
             return PaymentResult.NOT_ENOUGH_STAMINA;
         }
-        if (plan.mana() > 0 && !mana.allowsSpending(player, plan.mana())) {
+        boolean manaTaken = false;
+        try {
+            ResourcePool.Claim manaClaim = plan.mana() > 0 ? mana.claim(player, plan.mana()) : ResourcePool.Claim.FREE;
+            manaTaken = manaClaim != null && manaClaim.take();
+        } finally {
+            if (!manaTaken) {
+                staminaClaim.release();
+            }
+        }
+        if (!manaTaken) {
             return PaymentResult.NOT_ENOUGH_MANA;
         }
-        if (plan.stamina() > 0) {
-            stamina.spend(player, plan.stamina());
-        }
-        if (plan.mana() > 0) {
-            mana.spend(player, plan.mana());
-        }
+        // The mana is gone, so the use counts as paid even if the stamina mod takes nothing now.
+        staminaClaim.take();
         return PaymentResult.PAID;
     }
 }

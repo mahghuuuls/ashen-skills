@@ -54,6 +54,26 @@ dependencies {
     if (System.getenv('ASHEN_WITHOUT_CRITWORKS') == null) {
         runtimeOnly files('libs/critworks-1.1.0-dev.jar')
     }
+    // JASS 1.2.0 (stamina) and JAWMS 1.5.0 (mana), the owner's mods: compiled against, never packed
+    // into this mod's jar. The JAWMS interface names a class of Electroblob's Wizardry, so Wizardry
+    // 4.3.19 is needed to compile the one class that calls JAWMS.
+    // SHA-256 of the published files:
+    // JASS bcfbc779cba6b6a9b625d381c3ab16de5687c6717ad8ea3374285d6f5e16f1e1
+    // JAWMS 6b4a5ee13e40f9c44bebd0ac25533087d6e80f106bfd936ea1ca379f98047dde
+    // Wizardry 8a7f94dbccac622febff5111f3b3c2ba439e1d2b2c743f2a5c31fdfcd92d241c
+    def resourceMods = [
+            'curse.maven:just-another-stamina-system-1740560:9438894',
+            'curse.maven:just-another-wizardry-mana-system-1643697:9529869',
+            'curse.maven:electroblobs-wizardry-265642:8320066']
+    resourceMods.each { compileOnly rfg.deobf(it) }
+    // In the development game only when a run asks for them.
+    if (System.getenv('ASHEN_WITH_RESOURCE_MODS') != null) {
+        resourceMods.each { runtimeOnly rfg.deobf(it) }
+        // JAWMS's own test commands (set a player's mana). Never needed to build.
+        if (file('libs/jawms-devtools-1.5.0.jar').exists()) {
+            runtimeOnly rfg.deobf(files('libs/jawms-devtools-1.5.0.jar'))
+        }
+    }
     // Only in the development game, to check the weapon types of its categories. Never compiled against.
     // A local copy of the published jar without the Mixin library it bundles: that library clashes
     // with MixinBooter's when both sit on the development classpath.
