@@ -25,4 +25,19 @@ public interface CritGateway {
 
     /** Always called after {@link #beginStrike}, also when the strike failed part way. */
     void endStrike(EntityPlayer user);
+
+    /**
+     * Runs one strike between its begin and its end. The end is told even when the strike throws,
+     * so a failed strike cannot leave the next attack of that player inside this one.
+     *
+     * @param strike damages the targets of one hit window
+     */
+    static void around(CritGateway gateway, EntityPlayer user, ItemStack weapon, Runnable strike) {
+        gateway.beginStrike(user, weapon);
+        try {
+            strike.run();
+        } finally {
+            gateway.endStrike(user);
+        }
+    }
 }

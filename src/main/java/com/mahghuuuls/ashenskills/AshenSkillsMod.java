@@ -2,6 +2,7 @@ package com.mahghuuuls.ashenskills;
 
 import com.mahghuuuls.ashenskills.command.AshenSkillsCommand;
 import com.mahghuuuls.ashenskills.attribute.SkillAttributes;
+import com.mahghuuuls.ashenskills.combat.SkillDamage;
 import com.mahghuuuls.ashenskills.config.PackConfiguration;
 import com.mahghuuuls.ashenskills.config.Settings;
 import com.mahghuuuls.ashenskills.integration.IntegrationGate;
@@ -27,7 +28,7 @@ import org.apache.logging.log4j.Logger;
         name = Tags.MOD_NAME,
         version = Tags.VERSION,
         acceptedMinecraftVersions = "[1.12.2]",
-        dependencies = "required-after:mixinbooter@[12.1,);after:spartanweaponry")
+        dependencies = "required-after:mixinbooter@[12.1,);after:spartanweaponry;after:critworks@[1.1.0,)")
 public class AshenSkillsMod {
 
     public static final Logger LOGGER = LogManager.getLogger(Tags.MOD_NAME);
@@ -47,6 +48,7 @@ public class AshenSkillsMod {
         SkillAttributes.install();
         IntegrationGate.decide(LOGGER);
         WeaponTypes.load(Settings.defaults().builtInItemTypes(), IntegrationGate.weaponCategories());
+        SkillDamage.setCritGateway(IntegrationGate.crits());
         SkillRuntimeHooks.install();
     }
 

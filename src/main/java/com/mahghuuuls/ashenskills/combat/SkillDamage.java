@@ -76,13 +76,13 @@ public final class SkillDamage {
                 skill.number(SkillNumber.REACH_BELOW), skill.number(SkillNumber.REACH_ABOVE));
         Selection selection = TargetSelector.select(user, area, cap, skill.flag(SkillFlag.SOLID_BLOCKS_OBSTRUCT));
         StringBuilder report = Diagnostics.enabled() ? new StringBuilder() : null;
-        int damaged = 0;
-        critGateway.beginStrike(user, weapon);
-        try {
+        int[] damagedCount = {0};
+        // One strike is one attack for the critical-hit system: all its targets share one roll.
+        CritGateway.around(critGateway, user, weapon, () -> {
             for (Entity target : selection.targets) {
                 float dealt = damage(user, weapon, skill, target, skillDamagePoints);
                 if (dealt >= 0) {
-                    damaged++;
+                    damagedCount[0]++;
                     listener.onDamaged(target);
                 }
                 if (report != null) {
@@ -90,9 +90,8 @@ public final class SkillDamage {
                             .append('=').append(dealt < 0 ? "none" : String.format(java.util.Locale.ROOT, "%.2f", dealt));
                 }
             }
-        } finally {
-            critGateway.endStrike(user);
-        }
+        });
+        int damaged = damagedCount[0];
         if (report != null) {
             Diagnostics.log("HIT_WINDOW",
                     "player={} skill={} candidates={} inShape={} selected={} damaged={} serverTick={} dealt:{}",

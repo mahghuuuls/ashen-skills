@@ -13,11 +13,14 @@ import org.apache.logging.log4j.Logger;
  */
 public final class IntegrationGate {
 
+    private static final String CRITWORKS_MOD_ID = "critworks";
+    private static final String CRITWORKS_CRITS = "com.mahghuuuls.ashenskills.integration.critworks.CritworksCrits";
     private static final String SPARTAN_MOD_ID = "spartanweaponry";
     private static final String SPARTAN_CATEGORIES = "com.mahghuuuls.ashenskills.integration.spartan.SpartanCategories";
 
     private static ResourceGateway resources;
     private static WeaponCategorySource weaponCategories;
+    private static CritGateway crits;
 
     private IntegrationGate() {
     }
@@ -32,8 +35,11 @@ public final class IntegrationGate {
         weaponCategories = implementationOr(
                 Loader.isModLoaded(SPARTAN_MOD_ID), SPARTAN_CATEGORIES, WeaponCategorySource.class,
                 WeaponCategorySource.NONE, logger);
-        logger.info("Other mods: stamina=absent mana=absent spartanWeaponry={}",
-                weaponCategories == WeaponCategorySource.NONE ? "absent" : "present");
+        crits = implementationOr(
+                Loader.isModLoaded(CRITWORKS_MOD_ID), CRITWORKS_CRITS, CritGateway.class, CritGateway.NONE, logger);
+        logger.info("Other mods: stamina=absent mana=absent spartanWeaponry={} critworks={}",
+                weaponCategories == WeaponCategorySource.NONE ? "absent" : "present",
+                crits == CritGateway.NONE ? "absent" : "present");
     }
 
     public static ResourceGateway resources() {
@@ -42,6 +48,10 @@ public final class IntegrationGate {
 
     public static WeaponCategorySource weaponCategories() {
         return weaponCategories;
+    }
+
+    public static CritGateway crits() {
+        return crits;
     }
 
     /**

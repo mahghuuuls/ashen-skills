@@ -43,6 +43,17 @@ dependencies {
     if (file('libs/agenttesttoolkit-1.8.0.jar').exists()) {
         runtimeOnly rfg.deobf(files('libs/agenttesttoolkit-1.8.0.jar'))
     }
+    // Critworks 1.1.0, the owner's critical-hit mod: compiled against, never packed into this mod's jar.
+    // The development build of the published 1.1.0 (same source commit), kept outside the repository.
+    // SHA-256 b2fee5297e407b0c24b63cc05f878582c85beb4634accdb5788c78000ab8ea9f
+    if (!file('libs/critworks-1.1.0-dev.jar').exists()) {
+        throw new GradleException('Missing libs/critworks-1.1.0-dev.jar: the development jar of Critworks 1.1.0 is needed to compile the Critworks integration.')
+    }
+    compileOnly files('libs/critworks-1.1.0-dev.jar')
+    // In the development game too, unless a run asks for a game without it.
+    if (System.getenv('ASHEN_WITHOUT_CRITWORKS') == null) {
+        runtimeOnly files('libs/critworks-1.1.0-dev.jar')
+    }
     // Only in the development game, to check the weapon types of its categories. Never compiled against.
     // A local copy of the published jar without the Mixin library it bundles: that library clashes
     // with MixinBooter's when both sit on the development classpath.
