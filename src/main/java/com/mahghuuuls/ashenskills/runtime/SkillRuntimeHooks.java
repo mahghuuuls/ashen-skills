@@ -2,6 +2,7 @@ package com.mahghuuuls.ashenskills.runtime;
 
 import com.mahghuuuls.ashenskills.combat.SkillDamage;
 import com.mahghuuuls.ashenskills.diagnostics.Diagnostics;
+import com.mahghuuuls.ashenskills.integration.IntegrationGate;
 import com.mahghuuuls.ashenskills.network.AshenNetwork;
 import com.mahghuuuls.ashenskills.network.SkillInputMessage;
 import net.minecraft.entity.Entity;
@@ -34,7 +35,8 @@ public final class SkillRuntimeHooks implements SkillInputMessage.Receiver {
 
     /** Creates the runtime and starts listening. Called once while the game loads. */
     public static void install() {
-        runtime = new SkillRuntime(new CooldownStore(System::currentTimeMillis), new NetworkSkillMessenger());
+        runtime = new SkillRuntime(
+                new CooldownStore(System::currentTimeMillis), new NetworkSkillMessenger(), IntegrationGate.resources());
         SkillRuntimeHooks hooks = new SkillRuntimeHooks();
         MinecraftForge.EVENT_BUS.register(hooks);
         AshenNetwork.setInputReceiver(hooks);

@@ -14,7 +14,15 @@ public enum RefusalReason {
     /** The exclusive cooldown runs. */
     ON_COOLDOWN(true),
     /** The player's state (riding, in the air, ...) does not allow the skill. */
-    NOT_ALLOWED_NOW(true);
+    NOT_ALLOWED_NOW(true),
+    /** The skill costs stamina and no stamina mod is installed; the server does not waive that. */
+    NO_STAMINA_SYSTEM(true),
+    /** The skill costs mana and no mana mod is installed; the server does not waive that. */
+    NO_MANA_SYSTEM(true),
+    /** The stamina mod does not let the player pay the cost now. */
+    NOT_ENOUGH_STAMINA(true),
+    /** The mana mod does not let the player pay the cost now. */
+    NOT_ENOUGH_MANA(true);
 
     private final boolean shownToPlayer;
 

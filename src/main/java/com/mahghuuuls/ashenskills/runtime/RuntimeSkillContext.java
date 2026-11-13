@@ -4,6 +4,7 @@ import com.mahghuuuls.ashenskills.api.HitShape;
 import com.mahghuuuls.ashenskills.api.SkillContext;
 import com.mahghuuuls.ashenskills.api.SkillDefinition;
 import com.mahghuuuls.ashenskills.api.SkillNumber;
+import com.mahghuuuls.ashenskills.attribute.SkillAttributes;
 import com.mahghuuuls.ashenskills.combat.SkillDamage;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -58,6 +59,7 @@ final class RuntimeSkillContext implements SkillContext {
                 player.posX - Math.sin(yaw) * forward, player.posY + player.height / 2,
                 player.posZ + Math.cos(yaw) * forward);
         return SkillDamage.strike(player, weapon(), session.skill(), shape, session.facingYaw(),
+                SkillAttributes.points(player, SkillAttributes.SKILL_DAMAGE),
                 new SkillDamage.StrikeListener() {
                     @Override
                     public void onDamaged(Entity target) {

@@ -5,9 +5,13 @@ import com.mahghuuuls.ashenskills.api.SkillDefinition;
 import com.mahghuuuls.ashenskills.api.SkillFlag;
 import com.mahghuuuls.ashenskills.api.SkillNumber;
 import com.mahghuuuls.ashenskills.api.SkillPhase;
+import com.mahghuuuls.ashenskills.attribute.SkillAttributes;
 import com.mahghuuuls.ashenskills.config.SettingKey;
 import com.mahghuuuls.ashenskills.config.Settings;
 import com.mahghuuuls.ashenskills.diagnostics.Diagnostics;
+import com.mahghuuuls.ashenskills.integration.PaymentPlan;
+import com.mahghuuuls.ashenskills.integration.PaymentResult;
+import com.mahghuuuls.ashenskills.integration.ResourceGateway;
 import com.mahghuuuls.ashenskills.runtime.SessionTimeline.Step;
 import com.mahghuuuls.ashenskills.skill.SkillRegistry;
 import com.mahghuuuls.ashenskills.weapon.AttachedSkill;
@@ -38,11 +42,13 @@ public final class SkillRuntime {
     private final Map<UUID, SkillSession> sessions = new HashMap<>();
     private final CooldownStore cooldowns;
     private final SkillMessenger messenger;
+    private final ResourceGateway resources;
     private int nextUseId;
 
-    public SkillRuntime(CooldownStore cooldowns, SkillMessenger messenger) {
+    public SkillRuntime(CooldownStore cooldowns, SkillMessenger messenger, ResourceGateway resources) {
         this.cooldowns = cooldowns;
         this.messenger = messenger;
+        this.resources = resources;
     }
 
     public CooldownStore cooldowns() {
@@ -63,8 +69,14 @@ public final class SkillRuntime {
         ItemStack weapon = player.getHeldItemMainhand();
         AttachedSkill attached = AttachedSkill.of(weapon);
         boolean stateAllowed = attached.isUsable() && isStateAllowed(player, attached.definition());
+        boolean free = usesSkillsForFree(player);
+        // A cooldown does not hold back a player who uses skills for free; it keeps counting.
+        long blockingCooldownMillis = free ? 0 : cooldowns.remainingMillis(player);
         RefusalReason refusal = ActivationRules.firstRefusal(
-                attached.status(), sessions.containsKey(player.getUniqueID()), cooldowns.remainingMillis(player), stateAllowed);
+                attached.status(), sessions.containsKey(player.getUniqueID()), blockingCooldownMillis, stateAllowed);
+        if (refusal == null) {
+            refusal = commit(player, attached.definition(), weapon, free);
+        }
         if (refusal != null) {
             Diagnostics.log("ACTIVATION", "player={} skill={} result=refused reason={}",
                     player.getName(), attached.skillId(), refusal);
@@ -73,27 +85,66 @@ public final class SkillRuntime {
             }
             return refusal;
         }
-        commit(player, attached.definition(), weapon);
         return null;
     }
 
-    /** Everything that becomes true the moment a skill executes, as one step. */
-    private void commit(EntityPlayerMP player, SkillDefinition skill, ItemStack weapon) {
-        long cooldownMillis = Math.round(skill.number(SkillNumber.COOLDOWN) * 1000);
-        cooldowns.start(player, cooldownMillis);
+    /** Whether skills cost this player nothing: no stamina or mana, and no cooldown started or obeyed. */
+    private static boolean usesSkillsForFree(EntityPlayerMP player) {
+        return player.capabilities.isCreativeMode && Settings.general().getBoolean(SettingKey.CREATIVE_BYPASS);
+    }
+
+    /** Takes the skill's stamina and mana. @return null when paid, otherwise why the skill does not start */
+    private RefusalReason payResources(EntityPlayerMP player, SkillDefinition skill) {
+        double scalePoints = Settings.general().getInt(SettingKey.HYPERBOLIC_SCALE_POINTS);
+        PaymentPlan plan = resources.quote(
+                UseCosts.resourceCost(skill.number(SkillNumber.STAMINA_COST), scalePoints,
+                        SkillAttributes.points(player, SkillAttributes.SKILL_STAMINA_EFFICIENCY)),
+                UseCosts.resourceCost(skill.number(SkillNumber.MANA_COST), scalePoints,
+                        SkillAttributes.points(player, SkillAttributes.SKILL_MANA_EFFICIENCY)));
+        PaymentResult result = resources.pay(player, plan);
+        Diagnostics.log("PAYMENT", "player={} skill={} staminaTaken={} manaTaken={} result={}",
+                player.getName(), skill.id(),
+                result == PaymentResult.PAID ? plan.stamina() : 0.0, result == PaymentResult.PAID ? plan.mana() : 0.0,
+                result);
+        return UseCosts.refusalFor(result);
+    }
+
+    /**
+     * Everything that becomes true the moment a skill executes, as one step. Stamina and mana come
+     * first, because their payment is the only part that can still fail; nothing else has happened
+     * then.
+     *
+     * @return null when the skill executes, otherwise why the payment failed
+     */
+    private RefusalReason commit(EntityPlayerMP player, SkillDefinition skill, ItemStack weapon, boolean free) {
+        RefusalReason unpaid = free ? null : payResources(player, skill);
+        if (unpaid != null) {
+            return unpaid;
+        }
+        long cooldownMillis = 0;
+        if (!free) {
+            cooldownMillis = UseCosts.cooldownMillis(
+                    skill.number(SkillNumber.COOLDOWN),
+                    Settings.general().getInt(SettingKey.HYPERBOLIC_SCALE_POINTS),
+                    SkillAttributes.points(player, SkillAttributes.SKILL_HASTE));
+            cooldowns.start(player, cooldownMillis);
+        }
         SkillSession session = new SkillSession(
                 player.getUniqueID(), skill, player.inventory.currentItem, weapon.getItem(), player.rotationYaw,
                 Settings.general().getInt(SettingKey.HIT_WINDOW_CAP_PER_ACTIVATION), nextUseId++);
         sessions.put(player.getUniqueID(), session);
         applySpeed(player, session.speedFraction());
         ActionLock.stopForbiddenUse(session, player);
-        Diagnostics.log("ACTIVATION", "player={} skill={} result=accepted cooldownMs={}",
-                player.getName(), skill.id(), cooldownMillis);
+        Diagnostics.log("ACTIVATION", "player={} skill={} result=accepted cooldownMs={} free={}",
+                player.getName(), skill.id(), cooldownMillis, free);
         Diagnostics.log("PHASE", "player={} skill={} phase={} lengthTicks={} cause=activation serverTick={} sneaking={}",
                 player.getName(), skill.id(), session.phase(), session.phaseLengthTicks(), serverTick(player),
                 player.isSneaking());
-        messenger.cooldownChanged(player, cooldownMillis, cooldownMillis);
+        if (!free) {
+            messenger.cooldownChanged(player, cooldownMillis, cooldownMillis);
+        }
         messenger.phaseChanged(player, session);
+        return null;
     }
 
     /** Advances every running skill use by one server tick. */

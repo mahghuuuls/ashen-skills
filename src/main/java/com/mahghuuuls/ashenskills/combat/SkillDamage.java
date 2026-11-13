@@ -64,12 +64,13 @@ public final class SkillDamage {
 
     /**
      * @param facingYaw the direction fixed when the skill executed
+     * @param skillDamagePoints the user's Ashen Skill Damage, in percent points
      * @param listener told about each damaged target
      * @return how many targets took damage
      */
     public static int strike(
             EntityPlayer user, ItemStack weapon, SkillDefinition skill, HitShape shape, float facingYaw,
-            StrikeListener listener) {
+            double skillDamagePoints, StrikeListener listener) {
         int cap = Settings.general().getInt(SettingKey.HIT_TARGET_CAP_PER_WINDOW);
         Area area = new Area(shape, facingYaw,
                 skill.number(SkillNumber.REACH_BELOW), skill.number(SkillNumber.REACH_ABOVE));
@@ -79,7 +80,7 @@ public final class SkillDamage {
         critGateway.beginStrike(user, weapon);
         try {
             for (Entity target : selection.targets) {
-                float dealt = damage(user, weapon, skill, target);
+                float dealt = damage(user, weapon, skill, target, skillDamagePoints);
                 if (dealt >= 0) {
                     damaged++;
                     listener.onDamaged(target);
@@ -102,7 +103,8 @@ public final class SkillDamage {
     }
 
     /** @return the health the target lost, or -1 when the game refused the damage */
-    private static float damage(EntityPlayer user, ItemStack weapon, SkillDefinition skill, Entity target) {
+    private static float damage(
+            EntityPlayer user, ItemStack weapon, SkillDefinition skill, Entity target, double skillDamagePoints) {
         EntityLivingBase creature = livingOf(target);
         double enchantmentBonus = creature != null && skill.flag(SkillFlag.DAMAGE_ENCHANTMENTS)
                 ? EnchantmentHelper.getModifierForCreature(weapon, creature.getCreatureAttribute())
@@ -112,7 +114,7 @@ public final class SkillDamage {
                 enchantmentBonus,
                 skill.number(SkillNumber.DAMAGE_MULTIPLIER),
                 0.0,
-                0.0);
+                skillDamagePoints);
         float healthBefore = creature == null ? 0 : creature.getHealth();
         struckWithoutLooting = skill.flag(SkillFlag.LOOTING) ? null : creature;
         boolean accepted;

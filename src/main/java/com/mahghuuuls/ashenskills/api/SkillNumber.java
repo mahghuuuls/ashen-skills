@@ -8,6 +8,10 @@ public enum SkillNumber {
 
     /** Length of the lockout of all skills that starts when this skill executes. */
     COOLDOWN("cooldown", true),
+    /** Stamina one use costs, before the user's Stamina Efficiency. 0 for none. */
+    STAMINA_COST("staminaCost", true),
+    /** Mana one use costs, before the user's Mana Efficiency. 0 for none. */
+    MANA_COST("manaCost", true),
     /** Length of the execution phase. */
     EXECUTION_LENGTH("executionLength", true),
     /** Length of the recovery after a completed execution. */

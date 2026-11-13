@@ -1,7 +1,9 @@
 package com.mahghuuuls.ashenskills;
 
 import com.mahghuuuls.ashenskills.command.AshenSkillsCommand;
+import com.mahghuuuls.ashenskills.attribute.SkillAttributes;
 import com.mahghuuuls.ashenskills.config.Settings;
+import com.mahghuuuls.ashenskills.integration.IntegrationGate;
 import com.mahghuuuls.ashenskills.network.AshenNetwork;
 import com.mahghuuuls.ashenskills.proxy.CommonProxy;
 import com.mahghuuuls.ashenskills.runtime.SkillRuntimeHooks;
@@ -38,6 +40,8 @@ public class AshenSkillsMod {
         Settings.load(event.getSuggestedConfigurationFile(), LOGGER);
         AshenNetwork.init();
         WeaponTypes.load(Settings.defaults());
+        SkillAttributes.install();
+        IntegrationGate.decide(LOGGER);
         SkillRuntimeHooks.install();
     }
 
