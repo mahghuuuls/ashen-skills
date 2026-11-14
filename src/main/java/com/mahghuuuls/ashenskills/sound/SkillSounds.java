@@ -21,7 +21,7 @@ public final class SkillSounds {
     /** The moment a strike damages a target. */
     public static final String IMPACT = "impact";
 
-    private static final String[] BUILT_IN_SKILLS = {"powerful_slash"};
+    private static final String[] BUILT_IN_SKILLS = {"powerful_slash", "unsheathe"};
 
     private SkillSounds() {
     }

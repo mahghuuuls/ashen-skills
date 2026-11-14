@@ -6,11 +6,16 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-/** Client to server: the player pressed or released the skill key. A request, never a decision. */
+/**
+ * Client to server: the player pressed or released the skill key, or pressed attack while preparing
+ * a skill. A request, never a decision.
+ */
 public final class SkillInputMessage implements IMessage {
 
     public static final byte KEY_DOWN = 0;
     public static final byte KEY_UP = 1;
+    /** The attack button, pressed during a preparation; the normal attack does not happen then. */
+    public static final byte ATTACK_PRESS = 2;
 
     private byte action;
 

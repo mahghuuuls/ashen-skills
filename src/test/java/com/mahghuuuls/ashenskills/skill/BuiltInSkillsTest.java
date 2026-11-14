@@ -101,6 +101,61 @@ class BuiltInSkillsTest {
         assertEquals(false, slash.flag(SkillFlag.SNEAKING_DURING_SKILL));
     }
 
+    @Test
+    void theShippedUnsheatheIsACompleteStanceSkillForTheKatana() {
+        SkillDefinition unsheathe = BuiltInSkills.definitionOf("unsheathe", DefaultsData.loadBundled());
+
+        assertEquals("ashenskills:unsheathe", unsheathe.id().toString());
+        assertEquals(ActivationKind.STANCE, unsheathe.activation());
+        assertEquals(set("katana"), unsheathe.weaponTypes());
+        assertEquals(java.util.Collections.emptyList(), unsheathe.missingValues());
+        assertEquals(java.util.Arrays.asList(0.15), unsheathe.hitWindowSeconds());
+        assertEquals(2.0, unsheathe.number(SkillNumber.DAMAGE_MULTIPLIER));
+        assertEquals(90.0, unsheathe.number(SkillNumber.ARC));
+        assertEquals(12.0, unsheathe.number(SkillNumber.STAMINA_COST));
+        assertEquals(10.0, unsheathe.number(SkillNumber.COOLDOWN));
+        assertEquals(0.5, unsheathe.number(SkillNumber.PREPARATION_SPEED));
+        assertEquals(0.2, unsheathe.number(SkillNumber.PREPARATION_STAMINA_REGEN));
+        assertEquals(true, unsheathe.flag(SkillFlag.PREPARATION_CANCELED_BY_DAMAGE));
+        assertEquals(true, unsheathe.flag(SkillFlag.PREPARATION_CANCELED_BY_KNOCKBACK));
+    }
+
+    @Test
+    void aChargedSkillIsRefusedAtRegistrationWithAReason() {
+        SkillDefinition charged = SkillDefinition.builder(
+                new net.minecraft.util.ResourceLocation("test", "charged_blow"), ActivationKind.CHARGED).build();
+
+        IllegalStateException refusal = assertThrows(IllegalStateException.class,
+                () -> SkillRegistry.register(charged, (context, window) -> { }));
+
+        org.junit.jupiter.api.Assertions.assertTrue(refusal.getMessage().contains("charged skill"), refusal.getMessage());
+        org.junit.jupiter.api.Assertions.assertNull(SkillRegistry.get(charged.id()));
+    }
+
+    @Test
+    void aSkillWithAPreparationNeedsThePreparationValuesAndAnInstantSkillDoesNot() {
+        SkillDefinition instant = BuiltInSkills.definitionOf("powerful_slash", DefaultsData.loadBundled());
+        assertEquals(java.util.Collections.emptyList(), instant.missingValues());
+        assertThrows(IllegalStateException.class, () -> instant.number(SkillNumber.PREPARATION_SPEED));
+        assertThrows(IllegalStateException.class, () -> instant.flag(SkillFlag.PREPARATION_CANCELED_BY_DAMAGE));
+
+        SkillDefinition.Builder stance = SkillDefinition.builder(
+                new net.minecraft.util.ResourceLocation("test", "stance"), ActivationKind.STANCE);
+        for (SkillNumber number : SkillNumber.values()) {
+            if (number.isRequiredForEverySkill()) {
+                stance.number(number, 1);
+            }
+        }
+        for (SkillFlag flag : SkillFlag.values()) {
+            if (flag.isRequiredForEverySkill()) {
+                stance.flag(flag, false);
+            }
+        }
+
+        assertEquals(java.util.Arrays.asList("preparationSpeed", "preparationStaminaRegen",
+                "preparationCanceledByDamage", "preparationCanceledByKnockback"), stance.build().missingValues());
+    }
+
     /**
      * States the shipped identity values on purpose, as a second view of the defaults file: a
      * changed activation, type list or sword list must be a deliberate change to both.

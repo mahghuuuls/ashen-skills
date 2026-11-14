@@ -10,7 +10,8 @@ import net.minecraft.item.ItemStack;
 /**
  * What a player may not do while using a skill. Normal attacks are blocked in every phase; raising
  * a shield, using items, and jumping follow the skill's own rules for the phase; sneaking follows
- * one rule of the skill for all its phases. The
+ * one rule of the skill for all its phases. A preparation forbids no item use: the use goes on and
+ * the preparation ends (see {@link PreparationRules}). The
  * client is told the answers for attack, jump, and sneak with each phase report, so it never works
  * them out itself.
  */
@@ -60,6 +61,9 @@ final class ActionLock {
 
     /** The skill's rule for the phase: one for raising a shield, one for every other item use. */
     static boolean allowsUse(SkillDefinition skill, SkillPhase phase, boolean isShield) {
+        if (phase == SkillPhase.PREPARATION) {
+            return true;
+        }
         if (phase == SkillPhase.EXECUTION) {
             return skill.flag(isShield ? SkillFlag.BLOCKING_DURING_EXECUTION : SkillFlag.ITEM_USE_DURING_EXECUTION);
         }

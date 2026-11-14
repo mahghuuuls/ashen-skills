@@ -9,13 +9,22 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 /**
- * Server to clients: the skill phase a player is in now. Sent at every phase change and when a
- * client starts to see the player; receivers replace what they knew with it.
+ * Server to clients: the skill phase a player is in now. Sent at every phase change, when a
+ * client starts to see the player, and again every {@link #OPEN_ENDED_REPORT_TICKS} ticks while a
+ * phase without a length lasts; receivers replace what they knew with it.
  */
 public final class PhaseUpdateMessage implements IMessage {
 
     /** Phase code for "in no phase". */
     public static final byte NO_PHASE = 0;
+    /** The length a report carries for a phase without one (a preparation): it lasts until the next report says otherwise. */
+    public static final int NO_FIXED_LENGTH = 0;
+    /**
+     * How often the server sends the report of a phase without a length again while it lasts, in
+     * server ticks. A receiver trusts such a report for a few of these periods and then drops it,
+     * because no "ended" report reaches a client that stopped seeing the player.
+     */
+    public static final int OPEN_ENDED_REPORT_TICKS = 40;
 
     /** The code that stands for a phase in the mod's messages. */
     public static byte codeOf(SkillPhase phase) {

@@ -37,8 +37,10 @@ import net.minecraft.util.text.TextComponentString;
 
 /**
  * Operator command {@code /ashenskills}: shows what the mod knows about a player's weapon and
- * skill state, starts a player's skill for testing, clears a stuck phase or a cooldown, and asks
- * a player's client to use its animation check controls.
+ * skill state, starts a player's skill for testing ({@code start <player>} acts as the skill key
+ * going down, {@code start <player> release} as the key coming up, {@code start <player> attack} as
+ * the attack button in a stance), clears a stuck phase or a cooldown, and asks a player's client
+ * to use its animation check controls.
  */
 public final class AshenSkillsCommand extends CommandBase {
 
@@ -74,6 +76,19 @@ public final class AshenSkillsCommand extends CommandBase {
             RefusalReason refusal = runtime.requestStart(player);
             String result = "start player=" + player.getName()
                     + (refusal == null ? " result=STARTED" : " result=REFUSED reason=" + refusal);
+            reply(sender, result);
+            audit(sender, result);
+        } else if ("start".equals(args[0]) && args.length == 3 && "release".equals(args[2])) {
+            EntityPlayerMP player = getPlayer(server, sender, args[1]);
+            String result = "start player=" + player.getName() + " keyReleased endedPreparation="
+                    + runtime.onKeyReleased(player);
+            reply(sender, result);
+            audit(sender, result);
+        } else if ("start".equals(args[0]) && args.length == 3 && "attack".equals(args[2])) {
+            EntityPlayerMP player = getPlayer(server, sender, args[1]);
+            RefusalReason refusal = runtime.onAttackPressed(player);
+            String result = "start player=" + player.getName() + " attackPressed"
+                    + (refusal == null ? " result=EXECUTED" : " result=REFUSED reason=" + refusal);
             reply(sender, result);
             audit(sender, result);
         } else if ("clear".equals(args[0]) && args.length == 3 && "phase".equals(args[2])) {
@@ -211,6 +226,9 @@ public final class AshenSkillsCommand extends CommandBase {
         }
         if (args.length == 2) {
             return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
+        }
+        if (args.length == 3 && "start".equals(args[0])) {
+            return getListOfStringsMatchingLastWord(args, "release", "attack");
         }
         if (args.length == 3 && "clear".equals(args[0])) {
             return getListOfStringsMatchingLastWord(args, "phase", "cooldown");

@@ -8,7 +8,7 @@ import com.mahghuuuls.ashenskills.api.SkillFlag;
 import com.mahghuuuls.ashenskills.api.SkillNumber;
 import com.mahghuuuls.ashenskills.config.DefaultsData;
 import com.mahghuuuls.ashenskills.config.DefaultsData.SkillEntry;
-import com.mahghuuuls.ashenskills.skill.builtin.PowerfulSlash;
+import com.mahghuuuls.ashenskills.skill.builtin.ArcStrike;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import net.minecraft.util.ResourceLocation;
@@ -20,7 +20,8 @@ public final class BuiltInSkills {
     private static final Map<String, SkillBehavior> IMPLEMENTED = new LinkedHashMap<>();
 
     static {
-        IMPLEMENTED.put("powerful_slash", new PowerfulSlash());
+        IMPLEMENTED.put("powerful_slash", new ArcStrike());
+        IMPLEMENTED.put("unsheathe", new ArcStrike());
     }
 
     private BuiltInSkills() {

@@ -106,4 +106,68 @@ class SessionTimelineTest {
         assertEquals(1, timeline.ticksInPhase());
         assertEquals(7, ticksUntil(timeline, Step.FINISHED));
     }
+
+    /** 0.35 s execution, 0.7 s recovery, 0.4 s interrupted recovery: 7, 14 and 8 ticks. */
+    private static SessionTimeline stanceTimeline() {
+        return SessionTimeline.withPreparation(0.35, 0.7, 0.4);
+    }
+
+    /** The timeline's "no length" is sent as it is, and clients compare it with the message's own constant. */
+    @Test
+    void theLengthOfAPreparationIsTheValueTheMessageNamesForNoLength() {
+        assertEquals(com.mahghuuuls.ashenskills.network.PhaseUpdateMessage.NO_FIXED_LENGTH,
+                SessionTimeline.NO_FIXED_LENGTH);
+    }
+
+    @Test
+    void aPreparationNeverEndsByTimeAndHasNoLength() {
+        SessionTimeline timeline = stanceTimeline();
+        assertEquals(SkillPhase.PREPARATION, timeline.phase());
+        assertEquals(SessionTimeline.NO_FIXED_LENGTH, timeline.phaseLengthTicks());
+
+        for (int tick = 1; tick <= 2000; tick++) {
+            assertEquals(Step.CONTINUE, timeline.tick());
+        }
+
+        assertEquals(SkillPhase.PREPARATION, timeline.phase());
+        assertEquals(2000, timeline.ticksInPhase());
+        assertEquals(0, timeline.executionTicksElapsed());
+    }
+
+    @Test
+    void executionBeginsOnlyFromThePreparationAndThenLastsItsOwnLength() {
+        SessionTimeline timeline = stanceTimeline();
+        for (int tick = 0; tick < 33; tick++) {
+            timeline.tick();
+        }
+
+        assertTrue(timeline.beginExecution());
+
+        assertEquals(SkillPhase.EXECUTION, timeline.phase());
+        assertEquals(0, timeline.ticksInPhase());
+        assertEquals(7, timeline.phaseLengthTicks());
+        assertFalse(timeline.beginExecution());
+        for (int tick = 1; tick < 7; tick++) {
+            assertEquals(Step.CONTINUE, timeline.tick());
+        }
+        assertEquals(Step.EXECUTION_ENDED, timeline.tick());
+        assertEquals(7, timeline.executionTicksElapsed());
+        assertEquals(14, timeline.phaseLengthTicks());
+    }
+
+    @Test
+    void aSkillUseThatStartsInExecutionHasNoPreparationToLeave() {
+        SessionTimeline instant = new SessionTimeline(0.5, 0.6, 0.4);
+
+        assertFalse(instant.beginExecution());
+        assertEquals(SkillPhase.EXECUTION, instant.phase());
+    }
+
+    @Test
+    void aPreparationIsNotAnExecutionThatCanBeInterrupted() {
+        SessionTimeline timeline = stanceTimeline();
+
+        assertFalse(timeline.interrupt());
+        assertEquals(SkillPhase.PREPARATION, timeline.phase());
+    }
 }

@@ -1,5 +1,6 @@
 package com.mahghuuuls.ashenskills.skill;
 
+import com.mahghuuuls.ashenskills.api.ActivationKind;
 import com.mahghuuuls.ashenskills.api.SkillBehavior;
 import com.mahghuuuls.ashenskills.api.SkillDefinition;
 import java.util.Collection;
@@ -34,6 +35,11 @@ public final class SkillRegistry {
         if (closed) {
             throw new IllegalStateException(
                     "Skill " + definition.id() + " was registered too late; register skills before the game finishes loading");
+        }
+        if (definition.activation() == ActivationKind.CHARGED) {
+            // Without this a charged skill would enter a preparation that no input can execute.
+            throw new IllegalStateException(
+                    "Skill " + definition.id() + " is a charged skill; this version runs instant and stance skills only");
         }
         if (!definition.missingValues().isEmpty()) {
             throw new IllegalStateException("Skill " + definition.id() + " lacks values: " + definition.missingValues());

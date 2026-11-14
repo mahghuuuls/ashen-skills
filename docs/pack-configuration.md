@@ -87,9 +87,11 @@ Values every skill has:
 
 Values only some skills have (naming one a skill does not have is a mistake): `arc` (degrees), `width` (blocks).
 
+Skills with a preparation (a held stance, a charge) also have: `preparationSpeed` (movement speed as a share of normal, 0 to 1), `preparationStaminaRegen` (what stamina regeneration is multiplied by during the preparation, 0 to 1; it needs a stamina mod), and the yes-or-no rules `preparationCanceledByDamage` and `preparationCanceledByKnockback`. A preparation costs nothing and starts no cooldown. It also ends when the player lets go of the skill key, changes the item in the main hand, starts to use an item or raise a shield, or is no longer in an allowed state.
+
 Yes-or-no rules, each `true` or `false`: `mountedAllowed`, `executionInterruptedByDamage`, `executionInterruptedByKnockback`, `blockingDuringExecution`, `itemUseDuringExecution`, `blockingDuringRecovery`, `itemUseDuringRecovery`, `jumpDuringExecution`, `sneakingDuringSkill`, `solidBlocksObstruct`, `damageEnchantments`, `fireAspect`, `knockback`, `looting`.
 
-The animations of a skill are stretched to the lengths the file sets. How a skill is activated (instant, stance, charged) cannot be changed.
+The animations of a skill's execution and recovery are stretched to the lengths the file sets; the animation of a preparation plays once at its own speed and then holds. How a skill is activated (instant, stance, charged) cannot be changed.
 
 ## Checking the result
 

@@ -106,6 +106,9 @@ public final class SkillOverrides {
         }
         for (SkillFlag flag : SkillFlag.values()) {
             if (flag.configName().equals(name)) {
+                if (!values.flags.containsKey(flag)) {
+                    return "this skill does not use this value";
+                }
                 if (!value.isJsonPrimitive() || !value.getAsJsonPrimitive().isBoolean()) {
                     return "must be true or false";
                 }

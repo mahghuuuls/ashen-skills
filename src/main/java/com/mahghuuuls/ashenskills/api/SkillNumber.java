@@ -22,6 +22,13 @@ public enum SkillNumber {
     EXECUTION_SPEED("executionSpeed", true),
     /** Movement speed during both kinds of recovery. */
     RECOVERY_SPEED("recoverySpeed", true),
+    /** Movement speed during preparation. Only skills that are not instant have it. */
+    PREPARATION_SPEED("preparationSpeed", false),
+    /**
+     * What the user's stamina regeneration is multiplied by during preparation: 0 stops it, 1
+     * leaves it. Only skills that are not instant have it.
+     */
+    PREPARATION_STAMINA_REGEN("preparationStaminaRegen", false),
     /** Weapon damage is multiplied by this for each hit of the skill. */
     DAMAGE_MULTIPLIER("damageMultiplier", true),
     /** How far the skill's strike reaches. */

@@ -28,7 +28,7 @@ public final class PlaybackRegistry {
         final SkillPhase phase;
         /** Time in the clip, when pinned; otherwise time since the phase began. */
         final double seconds;
-        /** Length of the phase as the server runs it; unused when pinned. */
+        /** Length of the phase as the server runs it, 0 for a phase without one; unused when pinned. */
         final double phaseSeconds;
         final boolean pinned;
 
@@ -45,7 +45,10 @@ public final class PlaybackRegistry {
             if (clip == null) {
                 return null;
             }
-            return ClipSampler.pose(clip, pinned ? seconds : ClipSampler.clipTime(clip, seconds, phaseSeconds));
+            // A phase without a length (a preparation) has nothing to stretch the clip to: the clip
+            // plays once at its own speed and its last pose is held.
+            boolean atOwnSpeed = pinned || phaseSeconds <= 0;
+            return ClipSampler.pose(clip, atOwnSpeed ? seconds : ClipSampler.clipTime(clip, seconds, phaseSeconds));
         }
     }
 

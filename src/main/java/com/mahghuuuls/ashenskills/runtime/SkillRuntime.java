@@ -1,5 +1,6 @@
 package com.mahghuuuls.ashenskills.runtime;
 
+import com.mahghuuuls.ashenskills.api.ActivationKind;
 import com.mahghuuuls.ashenskills.api.SkillBehavior;
 import com.mahghuuuls.ashenskills.api.SkillDefinition;
 import com.mahghuuuls.ashenskills.api.SkillFlag;
@@ -11,7 +12,9 @@ import com.mahghuuuls.ashenskills.config.Settings;
 import com.mahghuuuls.ashenskills.diagnostics.Diagnostics;
 import com.mahghuuuls.ashenskills.integration.PaymentPlan;
 import com.mahghuuuls.ashenskills.integration.PaymentResult;
+import com.mahghuuuls.ashenskills.integration.PreparationRegen;
 import com.mahghuuuls.ashenskills.integration.ResourceGateway;
+import com.mahghuuuls.ashenskills.network.PhaseUpdateMessage;
 import com.mahghuuuls.ashenskills.runtime.SessionTimeline.Step;
 import com.mahghuuuls.ashenskills.skill.SkillRegistry;
 import com.mahghuuuls.ashenskills.weapon.AttachedSkill;
@@ -32,6 +35,10 @@ import net.minecraft.server.MinecraftServer;
  * The server's skill engine: the only code that starts, advances, interrupts or ends a skill use.
  * Everything else asks it. Every way a skill use ends goes through {@link #end}, so cleanup cannot
  * be forgotten on one path.
+ *
+ * <p>An instant skill executes when it is asked for. A stance skill first enters a preparation
+ * that costs nothing; the attack button then executes it, and everything that belongs to executing
+ * (payment, cooldown, direction) happens at that moment, in {@link #execute}.
  */
 public final class SkillRuntime {
 
@@ -43,12 +50,16 @@ public final class SkillRuntime {
     private final CooldownStore cooldowns;
     private final SkillMessenger messenger;
     private final ResourceGateway resources;
+    private final PreparationRegen preparationRegen;
     private int nextUseId;
 
-    public SkillRuntime(CooldownStore cooldowns, SkillMessenger messenger, ResourceGateway resources) {
+    public SkillRuntime(
+            CooldownStore cooldowns, SkillMessenger messenger, ResourceGateway resources,
+            PreparationRegen preparationRegen) {
         this.cooldowns = cooldowns;
         this.messenger = messenger;
         this.resources = resources;
+        this.preparationRegen = preparationRegen;
     }
 
     public CooldownStore cooldowns() {
@@ -61,31 +72,108 @@ public final class SkillRuntime {
     }
 
     /**
-     * The player asks to use the skill on the main-hand weapon.
+     * The player asks to use the skill on the main-hand weapon: the skill key went down. An instant
+     * skill executes; a skill with a preparation enters it.
      *
      * @return null when the skill started, otherwise why it did not
      */
     public RefusalReason requestStart(EntityPlayerMP player) {
         ItemStack weapon = player.getHeldItemMainhand();
         AttachedSkill attached = AttachedSkill.of(weapon);
-        boolean stateAllowed = attached.isUsable() && isStateAllowed(player, attached.definition());
+        boolean instant = attached.isUsable() && attached.definition().activation() == ActivationKind.INSTANT;
+        // A preparation ends when an item is in use, so it does not start during one either.
+        boolean mayStartNow = attached.isUsable() && isStateAllowed(player, attached.definition())
+                && (instant || !player.isHandActive());
         boolean free = usesSkillsForFree(player);
         // A cooldown does not hold back a player who uses skills for free; it keeps counting.
         long blockingCooldownMillis = free ? 0 : cooldowns.remainingMillis(player);
         RefusalReason refusal = ActivationRules.firstRefusal(
-                attached.status(), sessions.containsKey(player.getUniqueID()), blockingCooldownMillis, stateAllowed);
+                attached.status(), sessions.containsKey(player.getUniqueID()), blockingCooldownMillis, mayStartNow);
         if (refusal == null) {
-            refusal = commit(player, attached.definition(), weapon, free);
+            if (instant) {
+                refusal = payAndExecute(player, attached.definition(), weapon, null, "activation");
+            } else {
+                prepare(player, open(player, attached.definition(), weapon));
+            }
         }
         if (refusal != null) {
-            Diagnostics.log("ACTIVATION", "player={} skill={} result=refused reason={}",
-                    player.getName(), attached.skillId(), refusal);
-            if (refusal.isShownToPlayer()) {
-                messenger.refused(player, refusal);
-            }
-            return refusal;
+            reportRefusal(player, attached.skillId(), refusal);
         }
+        return refusal;
+    }
+
+    /**
+     * The one way a skill comes to execute: the stamina and mana are taken first, because their
+     * payment is the only part that can fail, and nothing else has happened when it fails; then
+     * {@link #execute} does the rest.
+     *
+     * @param preparing the skill use that held the preparation, or null for an instant skill
+     * @return null when the skill executes, otherwise why the payment failed
+     */
+    private RefusalReason payAndExecute(
+            EntityPlayerMP player, SkillDefinition skill, ItemStack weapon, SkillSession preparing, String cause) {
+        boolean free = usesSkillsForFree(player);
+        RefusalReason unpaid = free ? null : payResources(player, skill);
+        if (unpaid != null) {
+            return unpaid;
+        }
+        execute(player, preparing != null ? preparing : open(player, skill, weapon), free, cause);
         return null;
+    }
+
+    private void reportRefusal(EntityPlayerMP player, String skillId, RefusalReason refusal) {
+        Diagnostics.log("ACTIVATION", "player={} skill={} result=refused reason={}", player.getName(), skillId, refusal);
+        if (refusal.isShownToPlayer()) {
+            messenger.refused(player, refusal);
+        }
+    }
+
+    /**
+     * The skill key came up. A preparation ends with it, at no cost.
+     *
+     * @return true when a preparation ended
+     */
+    public boolean onKeyReleased(EntityPlayerMP player) {
+        SkillSession session = sessions.get(player.getUniqueID());
+        if (session == null || session.phase() != SkillPhase.PREPARATION) {
+            return false;
+        }
+        end(session, player, "keyReleased");
+        return true;
+    }
+
+    /**
+     * The attack button was pressed. In a stance this executes the skill, when it can be paid for
+     * now; when it cannot, the player is told why and the stance goes on. A stance that something
+     * ended in this same tick (a jump, another item) ends here, at no cost, and nothing executes.
+     *
+     * @return null when the skill executed, the reason when the payment failed,
+     *     {@link RefusalReason#NOT_ALLOWED_NOW} when the stance ended instead, and
+     *     {@link RefusalReason#NO_SKILL} when the player holds no stance
+     */
+    public RefusalReason onAttackPressed(EntityPlayerMP player) {
+        SkillSession session = sessions.get(player.getUniqueID());
+        if (session == null || session.phase() != SkillPhase.PREPARATION
+                || session.skill().activation() != ActivationKind.STANCE) {
+            return RefusalReason.NO_SKILL;
+        }
+        String endCause = preparationEndCause(player, session);
+        if (endCause != null) {
+            end(session, player, endCause);
+            reportRefusal(player, session.skill().id().toString(), RefusalReason.NOT_ALLOWED_NOW);
+            return RefusalReason.NOT_ALLOWED_NOW;
+        }
+        RefusalReason unpaid = payAndExecute(player, session.skill(), null, session, "attackPressed");
+        if (unpaid != null) {
+            reportRefusal(player, session.skill().id().toString(), unpaid);
+        }
+        return unpaid;
+    }
+
+    /** Why this preparation may not go on now, or null. Asked every tick and before the skill executes. */
+    private static String preparationEndCause(EntityPlayerMP player, SkillSession session) {
+        return PreparationRules.endCause(
+                hasSwitchedWeapon(player, session), isStateAllowed(player, session.skill()), player.isHandActive());
     }
 
     /** Whether skills cost this player nothing: no stamina or mana, and no cooldown started or obeyed. */
@@ -108,18 +196,48 @@ public final class SkillRuntime {
         return UseCosts.refusalFor(result);
     }
 
+    /** Begins the record of a skill use on the weapon in the player's hand. */
+    private SkillSession open(EntityPlayerMP player, SkillDefinition skill, ItemStack weapon) {
+        SkillSession session = new SkillSession(
+                player.getUniqueID(), skill, player.inventory.currentItem, weapon.getItem(), player.rotationYaw,
+                Settings.general().getInt(SettingKey.HIT_WINDOW_CAP_PER_ACTIVATION), nextUseId++);
+        sessions.put(player.getUniqueID(), session);
+        return session;
+    }
+
+    /** What a preparation changes while it lasts: the player's speed and stamina regeneration. */
+    private void prepare(EntityPlayerMP player, SkillSession session) {
+        double regenMultiplier = session.skill().number(SkillNumber.PREPARATION_STAMINA_REGEN);
+        preparationRegen.begin(player, regenMultiplier);
+        Diagnostics.log("PREPARATION_REGEN", "player={} state=slowed multiplier={}", player.getName(), regenMultiplier);
+        enteredPhase(player, session, "keyDown");
+    }
+
     /**
-     * Everything that becomes true the moment a skill executes, as one step. Stamina and mana come
-     * first, because their payment is the only part that can still fail; nothing else has happened
-     * then.
+     * Gives the player's stamina regeneration back to the stamina mod. Called on every way out of a
+     * preparation: into the execution, and through {@link #end}.
      *
-     * @return null when the skill executes, otherwise why the payment failed
+     * @param player null when the player is no longer on the server
      */
-    private RefusalReason commit(EntityPlayerMP player, SkillDefinition skill, ItemStack weapon, boolean free) {
-        RefusalReason unpaid = free ? null : payResources(player, skill);
-        if (unpaid != null) {
-            return unpaid;
+    private void restoreRegen(SkillSession session, EntityPlayerMP player) {
+        if (player != null) {
+            preparationRegen.end(player);
+        } else {
+            preparationRegen.forget(session.playerId());
         }
+        Diagnostics.log("PREPARATION_REGEN", "player={} state=restored",
+                player == null ? session.playerId() : player.getName());
+    }
+
+    /**
+     * Everything that becomes true the moment a skill executes, as one step: the cooldown starts,
+     * the direction is fixed, and the execution phase begins. Only {@link #payAndExecute} calls
+     * this, after the payment.
+     *
+     * @param session new for an instant skill, in preparation for the others
+     */
+    private void execute(EntityPlayerMP player, SkillSession session, boolean free, String cause) {
+        SkillDefinition skill = session.skill();
         long cooldownMillis = 0;
         if (!free) {
             cooldownMillis = UseCosts.cooldownMillis(
@@ -128,22 +246,16 @@ public final class SkillRuntime {
                     SkillAttributes.points(player, SkillAttributes.SKILL_HASTE));
             cooldowns.start(player, cooldownMillis);
         }
-        SkillSession session = new SkillSession(
-                player.getUniqueID(), skill, player.inventory.currentItem, weapon.getItem(), player.rotationYaw,
-                Settings.general().getInt(SettingKey.HIT_WINDOW_CAP_PER_ACTIVATION), nextUseId++);
-        sessions.put(player.getUniqueID(), session);
-        applySpeed(player, session.speedFraction());
-        ActionLock.stopForbiddenUse(session, player);
+        if (session.timeline().beginExecution()) {
+            restoreRegen(session, player);
+        }
+        session.fixFacing(player.rotationYaw);
         Diagnostics.log("ACTIVATION", "player={} skill={} result=accepted cooldownMs={} free={}",
                 player.getName(), skill.id(), cooldownMillis, free);
-        Diagnostics.log("PHASE", "player={} skill={} phase={} lengthTicks={} cause=activation serverTick={} sneaking={}",
-                player.getName(), skill.id(), session.phase(), session.phaseLengthTicks(), serverTick(player),
-                player.isSneaking());
         if (!free) {
             messenger.cooldownChanged(player, cooldownMillis, cooldownMillis);
         }
-        messenger.phaseChanged(player, session);
-        return null;
+        enteredPhase(player, session, cause);
     }
 
     /** Advances every running skill use by one server tick. */
@@ -155,6 +267,10 @@ public final class SkillRuntime {
             EntityPlayerMP player = server.getPlayerList().getPlayerByUUID(session.playerId());
             if (player == null || player.isDead) {
                 end(session, player, "playerGone");
+                continue;
+            }
+            if (session.phase() == SkillPhase.PREPARATION) {
+                tickPreparation(player, session);
                 continue;
             }
             if (session.phase() == SkillPhase.EXECUTION) {
@@ -180,6 +296,20 @@ public final class SkillRuntime {
             } else if (step == Step.FINISHED) {
                 end(session, player, "completed");
             }
+        }
+    }
+
+    /** One tick of a preparation: it ends when something forbids it, and is reported again now and then. */
+    private void tickPreparation(EntityPlayerMP player, SkillSession session) {
+        String cause = preparationEndCause(player, session);
+        if (cause != null) {
+            end(session, player, cause);
+            return;
+        }
+        session.timeline().tick();
+        // A preparation has no length, so clients tell a current report of one from an old one by its age.
+        if (session.ticksInPhase() % PhaseUpdateMessage.OPEN_ENDED_REPORT_TICKS == 0) {
+            messenger.phaseChanged(player, session);
         }
     }
 
@@ -212,9 +342,15 @@ public final class SkillRuntime {
         return true;
     }
 
-    /** Taking damage or knockback interrupts the execution when the skill says so. */
+    /** Taking damage or knockback ends a preparation or interrupts an execution, when the skill says so. */
     public void onHurt(EntityPlayerMP player, boolean knockback) {
         SkillSession session = sessions.get(player.getUniqueID());
+        if (session != null && session.phase() == SkillPhase.PREPARATION) {
+            if (PreparationRules.endedByHurt(session.skill(), knockback)) {
+                end(session, player, knockback ? "knockback" : "damage");
+            }
+            return;
+        }
         if (session == null || session.phase() != SkillPhase.EXECUTION) {
             return;
         }
@@ -244,6 +380,11 @@ public final class SkillRuntime {
      * remains to tell, and the speed change is not part of a player's saved data.
      */
     public void reset() {
+        for (SkillSession session : sessions.values()) {
+            if (session.phase() == SkillPhase.PREPARATION) {
+                restoreRegen(session, null);
+            }
+        }
         sessions.clear();
     }
 
@@ -288,6 +429,9 @@ public final class SkillRuntime {
     /** The single way a skill use ends. The player is null when no longer on the server. */
     private void end(SkillSession session, EntityPlayerMP player, String cause) {
         sessions.remove(session.playerId());
+        if (session.phase() == SkillPhase.PREPARATION) {
+            restoreRegen(session, player);
+        }
         if (player != null) {
             removeSpeed(player);
             messenger.phaseChanged(player, null);

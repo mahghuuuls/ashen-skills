@@ -38,7 +38,11 @@ class ClipTest {
     }
 
     private static String shipped(String name) throws IOException {
-        String path = "/assets/ashenskills/ashen_clips/powerful_slash/" + name + ".json";
+        return shipped("powerful_slash", name);
+    }
+
+    private static String shipped(String skill, String name) throws IOException {
+        String path = "/assets/ashenskills/ashen_clips/" + skill + "/" + name + ".json";
         try (InputStream stream = ClipTest.class.getResourceAsStream(path)) {
             assertNotNull(stream, "missing resource " + path);
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -178,6 +182,36 @@ class ClipTest {
                 ClipParser.parse(shipped("third_recovery")).lengthSeconds(), EXACT);
         assertEquals(slash.number(SkillNumber.INTERRUPTED_RECOVERY),
                 ClipParser.parse(shipped("third_interrupted_recovery")).lengthSeconds(), EXACT);
+    }
+
+    @Test
+    void theShippedUnsheatheClipsLoadAndLastAsLongAsTheirDefaultPhases() throws Exception {
+        SkillDefinition unsheathe = BuiltInSkills.definitionOf("unsheathe", DefaultsData.loadBundled());
+
+        for (String view : new String[] {"first", "third"}) {
+            assertTrue(ClipParser.parse(shipped("unsheathe", view + "_preparation")).lengthSeconds() > 0);
+            assertEquals(unsheathe.number(SkillNumber.EXECUTION_LENGTH),
+                    ClipParser.parse(shipped("unsheathe", view + "_execution")).lengthSeconds(), EXACT);
+            assertEquals(unsheathe.number(SkillNumber.RECOVERY),
+                    ClipParser.parse(shipped("unsheathe", view + "_recovery")).lengthSeconds(), EXACT);
+            assertEquals(unsheathe.number(SkillNumber.INTERRUPTED_RECOVERY),
+                    ClipParser.parse(shipped("unsheathe", view + "_interrupted_recovery")).lengthSeconds(), EXACT);
+        }
+    }
+
+    /** The stance is held for any length of time, so each next clip must begin in the pose the last one ends in. */
+    @Test
+    void theShippedUnsheatheGoesFromStanceToCutToRestWithoutAJump() throws Exception {
+        for (String view : new String[] {"first", "third"}) {
+            Clip stance = ClipParser.parse(shipped("unsheathe", view + "_preparation"));
+            Clip cut = ClipParser.parse(shipped("unsheathe", view + "_execution"));
+            Clip recovery = ClipParser.parse(shipped("unsheathe", view + "_recovery"));
+
+            assertEquals(ClipSampler.pose(stance, stance.lengthSeconds()).describe(),
+                    ClipSampler.pose(cut, 0).describe(), view);
+            assertEquals(ClipSampler.pose(cut, cut.lengthSeconds()).describe(),
+                    ClipSampler.pose(recovery, 0).describe(), view);
+        }
     }
 
     @Test

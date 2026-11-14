@@ -36,7 +36,8 @@ public final class SkillRuntimeHooks implements SkillInputMessage.Receiver {
     /** Creates the runtime and starts listening. Called once while the game loads. */
     public static void install() {
         runtime = new SkillRuntime(
-                new CooldownStore(System::currentTimeMillis), new NetworkSkillMessenger(), IntegrationGate.resources());
+                new CooldownStore(System::currentTimeMillis), new NetworkSkillMessenger(), IntegrationGate.resources(),
+                IntegrationGate.preparationRegen());
         SkillRuntimeHooks hooks = new SkillRuntimeHooks();
         MinecraftForge.EVENT_BUS.register(hooks);
         AshenNetwork.setInputReceiver(hooks);
@@ -55,6 +56,10 @@ public final class SkillRuntimeHooks implements SkillInputMessage.Receiver {
     public void onSkillInput(EntityPlayerMP player, byte action) {
         if (action == SkillInputMessage.KEY_DOWN) {
             runtime.requestStart(player);
+        } else if (action == SkillInputMessage.KEY_UP) {
+            runtime.onKeyReleased(player);
+        } else if (action == SkillInputMessage.ATTACK_PRESS) {
+            runtime.onAttackPressed(player);
         }
     }
 

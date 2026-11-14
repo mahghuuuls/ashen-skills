@@ -11,7 +11,10 @@ public final class ClientSwitches {
 
     /** The first-person skill view; without it skills show the game's own hand. */
     public static final String FIRST_PERSON_VIEW = "firstPersonView";
-    /** The client's attack and jump lock; without it only the server refuses those actions. */
+    /**
+     * The client's attack and jump lock; without it only the server refuses those actions, and the
+     * attack button no longer reaches a stance, so a stance skill cannot execute.
+     */
     public static final String INPUT_LOCK = "inputLock";
 
     private ClientSwitches() {

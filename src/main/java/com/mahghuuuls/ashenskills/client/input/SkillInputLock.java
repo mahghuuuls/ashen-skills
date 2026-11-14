@@ -1,8 +1,12 @@
 package com.mahghuuuls.ashenskills.client.input;
 
+import com.mahghuuuls.ashenskills.api.SkillPhase;
 import com.mahghuuuls.ashenskills.client.ClientSwitches;
 import com.mahghuuuls.ashenskills.client.state.ClientSkillState;
 import com.mahghuuuls.ashenskills.client.state.ClientSkillState.PhaseView;
+import com.mahghuuuls.ashenskills.network.AshenNetwork;
+import com.mahghuuuls.ashenskills.network.PhaseUpdateMessage;
+import com.mahghuuuls.ashenskills.network.SkillInputMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.util.MovementInput;
@@ -23,11 +27,15 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
  *
  * <p>While the attack is locked the attack key reads as released, so a button held through a skill
  * must be pressed again afterward; any other action bound to the same key is released with it.
+ *
+ * <p>During a preparation the attack button is the skill's own input: a press does no normal
+ * attack and is reported to the server, which decides whether the skill executes.
  */
 public final class SkillInputLock {
 
     /** The share of walking speed the game leaves a sneaking player. */
     private static final float SNEAK_SLOWING = 0.3F;
+    private static final byte PREPARATION = PhaseUpdateMessage.codeOf(SkillPhase.PREPARATION);
 
     private SkillInputLock() {
     }
@@ -54,7 +62,8 @@ public final class SkillInputLock {
 
     /**
      * Throws away attack presses. The game acts on them after its input events and before the
-     * next tick starts, so they are dropped at each of those moments.
+     * next tick starts, so they are dropped at each of those moments. A press thrown away during a
+     * preparation is reported to the server, once.
      */
     private static void dropAttackPresses() {
         PhaseView phase = ownPhase();
@@ -63,8 +72,13 @@ public final class SkillInputLock {
         }
         KeyBinding attack = Minecraft.getMinecraft().gameSettings.keyBindAttack;
         KeyBinding.setKeyBindState(attack.getKeyCode(), false);
+        boolean pressed = false;
         while (attack.isPressed()) {
             // Each call takes one waiting press.
+            pressed = true;
+        }
+        if (pressed && phase.phaseCode == PREPARATION) {
+            AshenNetwork.channel().sendToServer(new SkillInputMessage(SkillInputMessage.ATTACK_PRESS));
         }
     }
 

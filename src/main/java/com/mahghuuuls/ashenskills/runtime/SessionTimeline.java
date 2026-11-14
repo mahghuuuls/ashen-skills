@@ -4,7 +4,9 @@ import com.mahghuuuls.ashenskills.api.SkillPhase;
 
 /**
  * The phases of one skill use and how long each lasts, counted in server ticks. Knows nothing
- * about the game, so its timing can be tested alone.
+ * about the game, so its timing can be tested alone. A skill use starts in execution, or, for a
+ * skill with a preparation, in a preparation that lasts until {@link #beginExecution()} or until
+ * the skill use is dropped.
  */
 final class SessionTimeline {
 
@@ -19,6 +21,8 @@ final class SessionTimeline {
     }
 
     static final int TICKS_PER_SECOND = 20;
+    /** What {@link #phaseLengthTicks()} gives for the preparation: it has no length of its own. */
+    static final int NO_FIXED_LENGTH = 0;
 
     private final int executionTicks;
     private final int recoveryTicks;
@@ -29,10 +33,19 @@ final class SessionTimeline {
     private int executionTicksElapsed;
     private boolean startsCountingNextTick;
 
+    /** A skill use that starts in execution. */
     SessionTimeline(double executionSeconds, double recoverySeconds, double interruptedRecoverySeconds) {
         this.executionTicks = toTicks(executionSeconds);
         this.recoveryTicks = toTicks(recoverySeconds);
         this.interruptedRecoveryTicks = toTicks(interruptedRecoverySeconds);
+    }
+
+    /** A skill use that starts in preparation. */
+    static SessionTimeline withPreparation(
+            double executionSeconds, double recoverySeconds, double interruptedRecoverySeconds) {
+        SessionTimeline timeline = new SessionTimeline(executionSeconds, recoverySeconds, interruptedRecoverySeconds);
+        timeline.phase = SkillPhase.PREPARATION;
+        return timeline;
     }
 
     /** Every phase lasts at least one tick, so a skill use always ends. */
@@ -53,8 +66,11 @@ final class SessionTimeline {
         return executionTicksElapsed;
     }
 
+    /** The length of the current phase, or {@link #NO_FIXED_LENGTH} in preparation. */
     int phaseLengthTicks() {
         switch (phase) {
+            case PREPARATION:
+                return NO_FIXED_LENGTH;
             case EXECUTION:
                 return executionTicks;
             case RECOVERY:
@@ -70,6 +86,10 @@ final class SessionTimeline {
             return Step.CONTINUE;
         }
         ticksInPhase++;
+        if (phase == SkillPhase.PREPARATION) {
+            // Time alone never ends a preparation.
+            return Step.CONTINUE;
+        }
         if (phase == SkillPhase.EXECUTION) {
             executionTicksElapsed++;
         }
@@ -96,6 +116,19 @@ final class SessionTimeline {
         }
         enter(SkillPhase.INTERRUPTED_RECOVERY);
         startsCountingNextTick = true;
+        return true;
+    }
+
+    /**
+     * Ends the preparation with the execution.
+     *
+     * @return true when the execution began, false when the skill use was not in preparation
+     */
+    boolean beginExecution() {
+        if (phase != SkillPhase.PREPARATION) {
+            return false;
+        }
+        enter(SkillPhase.EXECUTION);
         return true;
     }
 

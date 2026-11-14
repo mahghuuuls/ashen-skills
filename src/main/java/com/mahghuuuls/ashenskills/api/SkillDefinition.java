@@ -22,6 +22,11 @@ public final class SkillDefinition {
     /** The player is in water. */
     public static final String STATE_SWIMMING = "swimming";
 
+    private static final SkillNumber[] PREPARATION_NUMBERS = {
+        SkillNumber.PREPARATION_SPEED, SkillNumber.PREPARATION_STAMINA_REGEN};
+    private static final SkillFlag[] PREPARATION_FLAGS = {
+        SkillFlag.PREPARATION_CANCELED_BY_DAMAGE, SkillFlag.PREPARATION_CANCELED_BY_KNOCKBACK};
+
     private final ResourceLocation id;
     private final ActivationKind activation;
     private final Set<String> weaponTypes;
@@ -101,7 +106,7 @@ public final class SkillDefinition {
 
     /**
      * Configuration names of the required numbers and rules this skill still lacks. Empty when
-     * complete.
+     * complete. A skill that is not instant also needs the numbers and rules of its preparation.
      */
     public List<String> missingValues() {
         List<String> missing = new ArrayList<>();
@@ -111,8 +116,21 @@ public final class SkillDefinition {
             }
         }
         for (SkillFlag key : SkillFlag.values()) {
-            if (!flags.containsKey(key)) {
+            if (key.isRequiredForEverySkill() && !flags.containsKey(key)) {
                 missing.add(key.configName());
+            }
+        }
+        if (activation != ActivationKind.INSTANT) {
+            // A skill with a preparation needs the values that rule it.
+            for (SkillNumber key : PREPARATION_NUMBERS) {
+                if (!numbers.containsKey(key)) {
+                    missing.add(key.configName());
+                }
+            }
+            for (SkillFlag key : PREPARATION_FLAGS) {
+                if (!flags.containsKey(key)) {
+                    missing.add(key.configName());
+                }
             }
         }
         return missing;
@@ -120,7 +138,8 @@ public final class SkillDefinition {
 
     /**
      * Collects the parts of a skill. Every {@link SkillFlag} and every {@link SkillNumber} that is
-     * required for every skill must be set.
+     * required for every skill must be set, and for a skill that is not instant the preparation
+     * values too; {@link SkillDefinition#missingValues()} names what is still missing.
      */
     public static final class Builder {
 

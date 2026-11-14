@@ -22,6 +22,14 @@ class ActionLockTest {
     }
 
     @Test
+    void aPreparationForbidsNoItemUseWhateverTheSkillSaysForTheOtherPhases() {
+        SkillDefinition forbidsAll = skill(false, false, false, false);
+
+        assertTrue(ActionLock.allowsUse(forbidsAll, SkillPhase.PREPARATION, true));
+        assertTrue(ActionLock.allowsUse(forbidsAll, SkillPhase.PREPARATION, false));
+    }
+
+    @Test
     void noSkillUseBlocksNothing() {
         assertFalse(ActionLock.blocksAttack(null));
     }

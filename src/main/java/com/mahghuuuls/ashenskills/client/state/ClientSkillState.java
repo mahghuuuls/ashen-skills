@@ -1,6 +1,7 @@
 package com.mahghuuuls.ashenskills.client.state;
 
 import com.mahghuuuls.ashenskills.diagnostics.Diagnostics;
+import com.mahghuuuls.ashenskills.network.PhaseUpdateMessage;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -18,6 +19,7 @@ public final class ClientSkillState {
         /** The phase as the server's message codes it. */
         public final byte phaseCode;
         public final int elapsedTicksAtReport;
+        /** The length of the phase, or 0 for a phase that lasts until the server says otherwise. */
         public final int lengthTicks;
         /** Whether a normal attack by this player has no effect in this phase, as the server says. */
         public final boolean attackLocked;
@@ -40,12 +42,20 @@ public final class ClientSkillState {
             this.jumpLocked = jumpLocked;
             this.sneakLocked = sneakLocked;
             this.reportedAtMillis = System.currentTimeMillis();
-            long remainingMillis = Math.max(0, lengthTicks - elapsedTicksAtReport) * MILLIS_PER_TICK;
+            // A phase without a length (a preparation) is reported again while it lasts.
+            long remainingMillis = lengthTicks == PhaseUpdateMessage.NO_FIXED_LENGTH
+                    ? OPEN_ENDED_TRUST_MILLIS
+                    : Math.max(0, lengthTicks - elapsedTicksAtReport) * MILLIS_PER_TICK;
             this.staleAfterMillis = reportedAtMillis + remainingMillis + STALE_GRACE_MILLIS;
         }
     }
 
     private static final long MILLIS_PER_TICK = 50;
+    /**
+     * How long a report of a phase without a length is trusted: two of the server's report periods,
+     * so one late report (a slow server) does not drop a stance that still goes on.
+     */
+    private static final long OPEN_ENDED_TRUST_MILLIS = 2 * PhaseUpdateMessage.OPEN_ENDED_REPORT_TICKS * MILLIS_PER_TICK;
     /** How long after a phase's own end a report is still trusted when no newer one arrived. */
     private static final long STALE_GRACE_MILLIS = 1000;
 
@@ -60,7 +70,7 @@ public final class ClientSkillState {
     public static void setPhase(
             int entityId, String skillId, byte phaseCode, int elapsedTicks, int lengthTicks,
             boolean attackLocked, boolean jumpLocked, boolean sneakLocked) {
-        if (phaseCode == 0) {
+        if (phaseCode == PhaseUpdateMessage.NO_PHASE) {
             PHASES.remove(entityId);
         } else {
             PHASES.put(entityId, new PhaseView(

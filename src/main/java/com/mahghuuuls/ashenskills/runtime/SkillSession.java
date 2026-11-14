@@ -1,12 +1,16 @@
 package com.mahghuuuls.ashenskills.runtime;
 
+import com.mahghuuuls.ashenskills.api.ActivationKind;
 import com.mahghuuuls.ashenskills.api.SkillDefinition;
 import com.mahghuuuls.ashenskills.api.SkillNumber;
 import com.mahghuuuls.ashenskills.api.SkillPhase;
 import java.util.UUID;
 import net.minecraft.item.Item;
 
-/** The server's record of one player's current skill use, from its start until recovery ends. */
+/**
+ * The server's record of one player's current skill use, from its start (the preparation, for a
+ * skill that has one) until recovery ends.
+ */
 public final class SkillSession {
 
     private final UUID playerId;
@@ -14,7 +18,7 @@ public final class SkillSession {
     private final SessionTimeline timeline;
     private final int hotbarSlot;
     private final Item weaponItem;
-    private final float facingYaw;
+    private float facingYaw;
     private final HitSchedule hitSchedule;
     private final int useId;
 
@@ -29,10 +33,12 @@ public final class SkillSession {
         this.facingYaw = facingYaw;
         this.useId = useId;
         this.hitSchedule = new HitSchedule(skill.hitWindowSeconds(), hitWindowCap);
-        this.timeline = new SessionTimeline(
-                skill.number(SkillNumber.EXECUTION_LENGTH),
-                skill.number(SkillNumber.RECOVERY),
-                skill.number(SkillNumber.INTERRUPTED_RECOVERY));
+        double execution = skill.number(SkillNumber.EXECUTION_LENGTH);
+        double recovery = skill.number(SkillNumber.RECOVERY);
+        double interruptedRecovery = skill.number(SkillNumber.INTERRUPTED_RECOVERY);
+        this.timeline = skill.activation() == ActivationKind.INSTANT
+                ? new SessionTimeline(execution, recovery, interruptedRecovery)
+                : SessionTimeline.withPreparation(execution, recovery, interruptedRecovery);
     }
 
     int useId() {
@@ -76,12 +82,24 @@ public final class SkillSession {
         return facingYaw;
     }
 
+    /** Called at the moment the skill executes: the direction is fixed then, not when a stance began. */
+    void fixFacing(float yawAtExecution) {
+        facingYaw = yawAtExecution;
+    }
+
     HitSchedule hitSchedule() {
         return hitSchedule;
     }
 
     /** Movement speed in the current phase, as a fraction of normal speed. */
     double speedFraction() {
-        return skill.number(phase() == SkillPhase.EXECUTION ? SkillNumber.EXECUTION_SPEED : SkillNumber.RECOVERY_SPEED);
+        switch (phase()) {
+            case PREPARATION:
+                return skill.number(SkillNumber.PREPARATION_SPEED);
+            case EXECUTION:
+                return skill.number(SkillNumber.EXECUTION_SPEED);
+            default:
+                return skill.number(SkillNumber.RECOVERY_SPEED);
+        }
     }
 }

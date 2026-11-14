@@ -58,6 +58,44 @@ class PackFilesTest {
                 .get(SLASH_ID);
     }
 
+    private static SkillDefinition overriddenUnsheathe(String entries, List<String> problems) {
+        ResourceLocation id = new ResourceLocation("ashenskills", "unsheathe");
+        Map<ResourceLocation, SkillDefinition> registered = new LinkedHashMap<>();
+        registered.put(id, BuiltInSkills.definitionOf("unsheathe", DEFAULTS));
+        return SkillOverrides.apply(
+                json("{'ashenskills:unsheathe': " + entries + "}"), registered, DEFAULTS, DEFAULTS.builtInTypeIds(), problems)
+                .get(id);
+    }
+
+    @Test
+    void aPackChangesThePreparationValuesOfAStanceSkillWithinTheirRanges() {
+        List<String> problems = new ArrayList<>();
+
+        SkillDefinition changed = overriddenUnsheathe(
+                "{'preparationSpeed': 0.8, 'preparationStaminaRegen': 0, 'preparationCanceledByDamage': false}", problems);
+
+        assertEquals(Collections.emptyList(), problems);
+        assertEquals(0.8, changed.number(SkillNumber.PREPARATION_SPEED));
+        assertEquals(0.0, changed.number(SkillNumber.PREPARATION_STAMINA_REGEN));
+        assertEquals(false, changed.flag(SkillFlag.PREPARATION_CANCELED_BY_DAMAGE));
+        assertEquals(true, changed.flag(SkillFlag.PREPARATION_CANCELED_BY_KNOCKBACK));
+
+        overriddenUnsheathe("{'preparationSpeed': 1.5, 'preparationStaminaRegen': 2}", problems);
+        assertEquals(2, problems.size(), problems.toString());
+    }
+
+    @Test
+    void aPreparationValueOnAnInstantSkillIsAMistake() {
+        List<String> problems = new ArrayList<>();
+
+        SkillDefinition slash = overridden("{'preparationSpeed': 0.8, 'preparationCanceledByDamage': true}", problems);
+
+        assertEquals(2, problems.size(), problems.toString());
+        assertTrue(problems.get(0).contains("does not use this value"), problems.get(0));
+        assertTrue(problems.get(1).contains("does not use this value"), problems.get(1));
+        assertEquals(Collections.emptyList(), slash.missingValues());
+    }
+
     private static Set<String> set(String... values) {
         return new HashSet<>(Arrays.asList(values));
     }
