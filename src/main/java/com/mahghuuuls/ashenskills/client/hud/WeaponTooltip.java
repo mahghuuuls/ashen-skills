@@ -9,7 +9,6 @@ import com.mahghuuuls.ashenskills.weapon.WeaponTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -32,7 +31,7 @@ public final class WeaponTooltip {
         boolean askedInDetail = event.getFlags().isAdvanced() || Minecraft.getMinecraft().currentScreen instanceof ForgeScreen;
         for (TooltipLines.Line line : TooltipLines.of(
                 WeaponTypes.effectiveTypes(stack), attached.status(), attached.skillId(), askedInDetail)) {
-            event.getToolTip().add(color(line.kind) + I18n.format(line.kind.languageKey(), shown(line)));
+            event.getToolTip().add("\u00a7" + line.kind.colorCode + I18n.format(line.kind.languageKey(), shown(line)));
         }
     }
 
@@ -40,19 +39,5 @@ public final class WeaponTooltip {
     private static String shown(TooltipLines.Line line) {
         boolean namesASkill = line.kind == TooltipLines.Kind.SKILL || line.kind == TooltipLines.Kind.SKILL_INCOMPATIBLE;
         return namesASkill ? AshItem.skillName(line.detail) : line.detail;
-    }
-
-    private static TextFormatting color(TooltipLines.Kind kind) {
-        switch (kind) {
-            case TYPES:
-                // the color of the skill line below it, so the two read as one block
-                return TextFormatting.GOLD;
-            case UNCLASSIFIED:
-                return TextFormatting.DARK_GRAY;
-            case SKILL:
-                return TextFormatting.GOLD;
-            default:
-                return TextFormatting.RED;
-        }
     }
 }

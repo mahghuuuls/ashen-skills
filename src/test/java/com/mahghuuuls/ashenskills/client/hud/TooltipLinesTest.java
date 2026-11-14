@@ -84,9 +84,20 @@ class TooltipLinesTest {
             String key = kind.languageKey() + "=";
             boolean found = false;
             for (String line : lines) {
-                found |= line.startsWith(key) && line.length() > key.length();
+                // every kind but the one without a detail must have a place for it, or the detail is not shown
+                found |= line.startsWith(key) && line.length() > key.length()
+                        && (kind == Kind.UNCLASSIFIED || line.contains("%s"));
             }
-            assertTrue(found, "no text for " + key);
+            assertTrue(found, "no text, or no place for the detail, for " + key);
         }
+    }
+
+    @Test
+    void theTypeLineHasTheColorOfAUsableSkillNoTypeIsDarkGreyAndProblemsAreRed() {
+        assertEquals(Kind.SKILL.colorCode, Kind.TYPES.colorCode);
+        assertEquals('6', Kind.SKILL.colorCode);
+        assertEquals('8', Kind.UNCLASSIFIED.colorCode);
+        assertEquals('c', Kind.SKILL_INCOMPATIBLE.colorCode);
+        assertEquals('c', Kind.SKILL_UNAVAILABLE.colorCode);
     }
 }

@@ -57,6 +57,13 @@ class SkillRowTooltipTest {
     }
 
     @Test
+    void theCooldownIsWhiteTheStaminaCostYellowAndTheManaCostBlue() {
+        assertEquals('f', Kind.COOLDOWN.colorCode);
+        assertEquals('e', Kind.STAMINA.colorCode);
+        assertEquals('9', Kind.MANA.colorCode);
+    }
+
+    @Test
     void theLanguageFileHasATextForEveryNumberedLine() throws IOException {
         Path file = Paths.get("src", "main", "resources", "assets", "ashenskills", "lang", "en_us.lang");
         assertTrue(Files.isRegularFile(file), "run from the project folder: missing " + file.toAbsolutePath());

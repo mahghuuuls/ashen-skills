@@ -12,22 +12,30 @@ import java.util.TreeSet;
  * type or a skill always gets its lines, and an item with a skill but no type says that it has no
  * type, because that is why its skill does not fit. An item with neither gets no line, except where
  * a player asks what the mod makes of an item: at an Ashen Forge and in advanced tooltips it is
- * marked as having no weapon type.
+ * marked as having no weapon type. Each kind of line has its color: the types share the color of a
+ * usable skill, and a skill that cannot be used is red.
  */
 public final class TooltipLines {
 
     /** What one added line says. */
     public enum Kind {
-        /** The item's weapon types; the detail is the list. */
-        TYPES,
+        /** The item's weapon types; the detail is the list. Gold, like a usable skill's line. */
+        TYPES('6'),
         /** The item has no weapon type. */
-        UNCLASSIFIED,
+        UNCLASSIFIED('8'),
         /** The attached skill, usable; the detail is its id. */
-        SKILL,
+        SKILL('6'),
         /** The attached skill does not fit this item's types; the detail is its id. */
-        SKILL_INCOMPATIBLE,
+        SKILL_INCOMPATIBLE('c'),
         /** No installed mod provides the attached skill; the detail is its id. */
-        SKILL_UNAVAILABLE;
+        SKILL_UNAVAILABLE('c');
+
+        /** The game's formatting code of this kind's color. */
+        public final char colorCode;
+
+        Kind(char colorCode) {
+            this.colorCode = colorCode;
+        }
 
         /** The language key of this line's text. */
         public String languageKey() {
