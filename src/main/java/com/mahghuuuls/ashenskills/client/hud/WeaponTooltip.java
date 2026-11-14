@@ -45,7 +45,8 @@ public final class WeaponTooltip {
     private static TextFormatting color(TooltipLines.Kind kind) {
         switch (kind) {
             case TYPES:
-                return TextFormatting.GRAY;
+                // the color of the skill line below it, so the two read as one block
+                return TextFormatting.GOLD;
             case UNCLASSIFIED:
                 return TextFormatting.DARK_GRAY;
             case SKILL:

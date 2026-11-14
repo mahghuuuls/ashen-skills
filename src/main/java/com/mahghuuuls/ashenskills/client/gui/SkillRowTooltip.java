@@ -15,8 +15,8 @@ public final class SkillRowTooltip {
     public enum Kind {
         NAME('6'),
         DESCRIPTION('7'),
-        COOLDOWN('b'),
-        STAMINA('a'),
+        COOLDOWN('f'),
+        STAMINA('e'),
         MANA('9');
 
         /** The game's formatting code of this kind's color. */
