@@ -68,7 +68,7 @@ final class TargetSelector {
     }
 
     static Selection select(EntityPlayer user, Area area, int targetCap, boolean solidBlocksObstruct) {
-        double reach = area.shape.reach();
+        double reach = area.shape.farthest();
         AxisAlignedBB searchBox = new AxisAlignedBB(
                 user.posX - reach, user.posY - area.reachBelow, user.posZ - reach,
                 user.posX + reach, user.posY + area.reachAbove, user.posZ + reach);

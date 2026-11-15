@@ -93,6 +93,20 @@ public final class SkillOverrides {
                 break;
             }
         }
+        Double travelTime = values.numbers.get(SkillNumber.TRAVEL_TIME);
+        executionLength = values.numbers.get(SkillNumber.EXECUTION_LENGTH);
+        if (travelTime != null && travelTime > executionLength) {
+            // Either value can be the one the file changed, so the message names both.
+            problems.add("skill '" + skill.id() + "': the travel ('" + SkillNumber.TRAVEL_TIME.configName() + "', "
+                    + travelTime + " s) lasts longer than the execution ('" + SkillNumber.EXECUTION_LENGTH.configName()
+                    + "', " + executionLength + " s); '" + SkillNumber.TRAVEL_TIME.configName() + "', '"
+                    + SkillNumber.EXECUTION_LENGTH.configName() + "' and '" + HIT_WINDOWS_KEY
+                    + "' all keep the skill's own values");
+            values.numbers.put(SkillNumber.TRAVEL_TIME, skill.number(SkillNumber.TRAVEL_TIME));
+            values.numbers.put(SkillNumber.EXECUTION_LENGTH, skill.number(SkillNumber.EXECUTION_LENGTH));
+            values.hitWindowSeconds.clear();
+            values.hitWindowSeconds.addAll(skill.hitWindowSeconds());
+        }
         Double minCharge = values.numbers.get(SkillNumber.MIN_CHARGE);
         Double fullCharge = values.numbers.get(SkillNumber.FULL_CHARGE);
         if (minCharge != null && fullCharge != null && fullCharge < minCharge) {

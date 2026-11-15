@@ -236,6 +236,22 @@ class ClipTest {
     }
 
     @Test
+    void theShippedPiercingLungeClipsLoadLastTheirPhasesAndDoNotJump() throws Exception {
+        SkillDefinition lunge = BuiltInSkills.definitionOf("piercing_lunge", DefaultsData.loadBundled());
+
+        for (String view : new String[] {"first", "third"}) {
+            Clip thrust = ClipParser.parse(shipped("piercing_lunge", view + "_execution"));
+            Clip recovery = ClipParser.parse(shipped("piercing_lunge", view + "_recovery"));
+            assertEquals(lunge.number(SkillNumber.EXECUTION_LENGTH), thrust.lengthSeconds(), EXACT);
+            assertEquals(lunge.number(SkillNumber.RECOVERY), recovery.lengthSeconds(), EXACT);
+            assertEquals(lunge.number(SkillNumber.INTERRUPTED_RECOVERY),
+                    ClipParser.parse(shipped("piercing_lunge", view + "_interrupted_recovery")).lengthSeconds(), EXACT);
+            assertEquals(ClipSampler.pose(thrust, thrust.lengthSeconds()).describe(),
+                    ClipSampler.pose(recovery, 0).describe(), view);
+        }
+    }
+
+    @Test
     void theShippedSlashHasItsStrikePoseAtTheHitTime() throws Exception {
         SkillDefinition slash = BuiltInSkills.definitionOf("powerful_slash", DefaultsData.loadBundled());
         double hitTime = slash.hitWindowSeconds().get(0);

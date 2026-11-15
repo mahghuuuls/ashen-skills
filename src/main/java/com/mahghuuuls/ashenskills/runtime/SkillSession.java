@@ -20,6 +20,12 @@ public final class SkillSession {
     private final Item weaponItem;
     private float facingYaw;
     private double chargeBonus;
+    private MotionPlan motion;
+    private double motionStartX;
+    private double motionStartZ;
+    private boolean motionRunning;
+    private boolean placeExcused;
+    private boolean stopOwed;
     private final HitSchedule hitSchedule;
     private final int useId;
 
@@ -96,6 +102,64 @@ public final class SkillSession {
     /** Called at the moment a charged skill executes, with what its charge is worth. */
     void fixChargeBonus(double bonusAtExecution) {
         chargeBonus = bonusAtExecution;
+    }
+
+    /** The motion of this skill use while it still moves or has to stop the player; null otherwise. */
+    MotionPlan motion() {
+        return motionRunning ? motion : null;
+    }
+
+    /** Called at the moment a skill with a motion executes. */
+    void beginMotion(MotionPlan plan, double startX, double startZ) {
+        motion = plan;
+        motionRunning = true;
+        placeExcused = plan.moves();
+        motionStartX = startX;
+        motionStartZ = startZ;
+    }
+
+    /**
+     * Whether the place the player is in (in the air after a ledge, in water) still counts as this
+     * skill's own doing. True from the start of a motion that carries the player somewhere, until
+     * {@link #endPlaceExcuse}.
+     */
+    boolean placeExcused() {
+        return placeExcused;
+    }
+
+    /** The motion is over and the player is back in a state the skill allows: the normal rule holds again. */
+    void endPlaceExcuse() {
+        placeExcused = false;
+    }
+
+    /** Whether the motion is over, and long enough ago that the server sees where it left the player. */
+    boolean motionSettled() {
+        return motion != null && !motionRunning && motion.settledAt(timeline.executionTicksElapsed());
+    }
+
+    /**
+     * The execution ended in the tick of a push: the stop waits one tick, so that the push still
+     * reaches the player.
+     */
+    void oweStop() {
+        stopOwed = true;
+    }
+
+    boolean stopOwed() {
+        return stopOwed && motionRunning;
+    }
+
+    /** The motion is over: the player was stopped. Where it began stays known. */
+    void endMotion() {
+        motionRunning = false;
+    }
+
+    /**
+     * How far the player has come along the motion's direction since it began, also after the
+     * motion ended; 0 without a motion, never below 0 and never above the motion's distance.
+     */
+    double travelled(double x, double z) {
+        return motion == null ? 0.0 : motion.travelled(motionStartX, motionStartZ, x, z);
     }
 
     HitSchedule hitSchedule() {

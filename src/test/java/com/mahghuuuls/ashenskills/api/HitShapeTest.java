@@ -1,5 +1,6 @@
 package com.mahghuuuls.ashenskills.api;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -67,8 +68,27 @@ class HitShapeTest {
     }
 
     @Test
+    void aLineFromBehindAlsoCoversTheGroundBehindTheUserAndNothingMore() {
+        HitShape thrust = HitShape.lineFromBehind(6.0, 4.0, 1.0);
+
+        assertTrue(hits(thrust, 0, 0, 0, -5.8));
+        assertTrue(hits(thrust, 0, 0, 0, -6.2));
+        assertFalse(hits(thrust, 0, 0, 0, -6.4));
+        assertTrue(hits(thrust, 0, 0, 0, 4.2));
+        assertFalse(hits(thrust, 0, 0, 0, 4.4));
+        assertFalse(hits(thrust, 0, 0.9, 0, -3));
+        // What a search for targets must cover: the longer of the two ends.
+        assertEquals(4.0, thrust.reach());
+        assertEquals(6.0, thrust.farthest());
+        assertEquals(4.0, HitShape.lineFromBehind(2.5, 4.0, 1.0).farthest());
+        assertEquals(4.0, HitShape.line(4.0, 1.0).farthest());
+    }
+
+    @Test
     void aShapeNeedsPositiveNumbers() {
         assertThrows(IllegalArgumentException.class, () -> HitShape.arc(0, 90));
         assertThrows(IllegalArgumentException.class, () -> HitShape.line(3, 0));
+        assertThrows(IllegalArgumentException.class, () -> HitShape.lineFromBehind(-1, 3, 1));
+        assertThrows(IllegalArgumentException.class, () -> HitShape.lineFromBehind(Double.NaN, 3, 1));
     }
 }

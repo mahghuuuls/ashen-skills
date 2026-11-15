@@ -23,7 +23,7 @@ public final class SkillSounds {
     /** The moment a charge reaches its full time. */
     public static final String CHARGED = "charged";
 
-    private static final String[] BUILT_IN_SKILLS = {"powerful_slash", "unsheathe", "crushing_blow"};
+    private static final String[] BUILT_IN_SKILLS = {"powerful_slash", "unsheathe", "crushing_blow", "piercing_lunge"};
     private static final String[] BUILT_IN_CHARGED_SKILLS = {"crushing_blow"};
 
     private SkillSounds() {

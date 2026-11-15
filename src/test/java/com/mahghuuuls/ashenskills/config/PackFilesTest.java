@@ -121,6 +121,41 @@ class PackFilesTest {
     }
 
     @Test
+    void aTravelLongerThanTheExecutionIsAMistakeAndTheSkillKeepsItsOwnTiming() {
+        ResourceLocation id = new ResourceLocation("ashenskills", "piercing_lunge");
+        Map<ResourceLocation, SkillDefinition> registered = new LinkedHashMap<>();
+        registered.put(id, BuiltInSkills.definitionOf("piercing_lunge", DEFAULTS));
+        List<String> problems = new ArrayList<>();
+
+        SkillDefinition changed = SkillOverrides.apply(
+                json("{'ashenskills:piercing_lunge': {'travelTime': 0.6, 'travelDistance': 6}}"),
+                registered, DEFAULTS, DEFAULTS.builtInTypeIds(), problems).get(id);
+
+        assertEquals(1, problems.size(), problems.toString());
+        assertTrue(problems.get(0).contains("lasts longer than the execution"), problems.get(0));
+        assertEquals(0.3, changed.number(SkillNumber.TRAVEL_TIME));
+        assertEquals(0.4, changed.number(SkillNumber.EXECUTION_LENGTH));
+        assertEquals(6.0, changed.number(SkillNumber.TRAVEL_DISTANCE));
+
+        // A shorter execution alone breaks the pair too.
+        problems.clear();
+        SkillDefinition shorter = SkillOverrides.apply(
+                json("{'ashenskills:piercing_lunge': {'executionLength': 0.28, 'hitWindows': [{'at': 0.2}]}}"),
+                registered, DEFAULTS, DEFAULTS.builtInTypeIds(), problems).get(id);
+        assertEquals(1, problems.size(), problems.toString());
+        assertEquals(0.4, shorter.number(SkillNumber.EXECUTION_LENGTH));
+        assertEquals(Arrays.asList(0.25), shorter.hitWindowSeconds());
+
+        // A travel as long as the execution is allowed.
+        problems.clear();
+        SkillDefinition whole = SkillOverrides.apply(
+                json("{'ashenskills:piercing_lunge': {'travelTime': 0.4}}"),
+                registered, DEFAULTS, DEFAULTS.builtInTypeIds(), problems).get(id);
+        assertEquals(Collections.emptyList(), problems);
+        assertEquals(0.4, whole.number(SkillNumber.TRAVEL_TIME));
+    }
+
+    @Test
     void aPreparationValueOnAnInstantSkillIsAMistake() {
         List<String> problems = new ArrayList<>();
 

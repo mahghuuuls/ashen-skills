@@ -50,6 +50,11 @@ final class RuntimeSkillContext implements SkillContext {
         return session.chargeBonus();
     }
 
+    @Override
+    public double travelled() {
+        return session.travelled(player.posX, player.posZ);
+    }
+
     /**
      * A strike is seen and heard as well as dealt: one swing in front of the user, at half the
      * strike's reach and at the middle of the user's height, and one impact at the middle of each

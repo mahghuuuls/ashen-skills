@@ -143,6 +143,23 @@ class BuiltInSkillsTest {
     }
 
     @Test
+    void theShippedPiercingLungeIsACompleteInstantSkillWithALineAndATravel() {
+        SkillDefinition lunge = BuiltInSkills.definitionOf("piercing_lunge", DefaultsData.loadBundled());
+
+        assertEquals("ashenskills:piercing_lunge", lunge.id().toString());
+        assertEquals(ActivationKind.INSTANT, lunge.activation());
+        assertEquals(set("spear", "pike", "rapier"), lunge.weaponTypes());
+        assertEquals(java.util.Collections.emptyList(), lunge.missingValues());
+        assertEquals(1.6, lunge.number(SkillNumber.DAMAGE_MULTIPLIER));
+        assertEquals(4.0, lunge.number(SkillNumber.REACH));
+        assertEquals(1.0, lunge.number(SkillNumber.WIDTH));
+        assertEquals(4.0, lunge.number(SkillNumber.TRAVEL_DISTANCE));
+        assertEquals(0.3, lunge.number(SkillNumber.TRAVEL_TIME));
+        assertEquals(0.0, lunge.number(SkillNumber.EXECUTION_SPEED));
+        assertThrows(IllegalStateException.class, () -> lunge.number(SkillNumber.ARC));
+    }
+
+    @Test
     void theShippedCrushingBlowIsACompleteChargedSkillForWarhammerAndMace() {
         SkillDefinition blow = BuiltInSkills.definitionOf("crushing_blow", DefaultsData.loadBundled());
 

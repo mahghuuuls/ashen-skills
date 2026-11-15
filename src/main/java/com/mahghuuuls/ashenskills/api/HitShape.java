@@ -13,14 +13,19 @@ public final class HitShape {
     private final Kind kind;
     private final double reach;
     private final double size;
+    private final double behind;
 
-    private HitShape(Kind kind, double reach, double size) {
-        if (reach <= 0 || size <= 0) {
+    private HitShape(Kind kind, double reach, double size, double behind) {
+        if (!(reach > 0) || !(size > 0)) {
             throw new IllegalArgumentException("A hit shape needs a positive reach and size");
+        }
+        if (!(behind >= 0) || Double.isInfinite(behind)) {
+            throw new IllegalArgumentException("A hit shape reaches 0 or more blocks behind the user");
         }
         this.kind = kind;
         this.reach = reach;
         this.size = size;
+        this.behind = behind;
     }
 
     /**
@@ -30,7 +35,7 @@ public final class HitShape {
      * @param arcDegrees full opening angle, centered on the facing direction, up to 360
      */
     public static HitShape arc(double reach, double arcDegrees) {
-        return new HitShape(Kind.ARC, reach, Math.min(arcDegrees, 360.0));
+        return new HitShape(Kind.ARC, reach, Math.min(arcDegrees, 360.0), 0);
     }
 
     /**
@@ -40,12 +45,29 @@ public final class HitShape {
      * @param width full width in blocks
      */
     public static HitShape line(double reach, double width) {
-        return new HitShape(Kind.LINE, reach, width);
+        return new HitShape(Kind.LINE, reach, width, 0);
     }
 
-    /** The farthest distance from the user at which anything can be inside the shape. */
+    /**
+     * A straight strip that begins behind the user: for a skill that carried its user forward, so
+     * that the strike also covers the ground the user crossed (see {@link SkillContext#travelled}).
+     *
+     * @param behind how far behind the user the strip begins, in blocks; 0 or more
+     * @param reach length in front of the user, in blocks
+     * @param width full width in blocks
+     */
+    public static HitShape lineFromBehind(double behind, double reach, double width) {
+        return new HitShape(Kind.LINE, reach, width, behind);
+    }
+
+    /** How far the shape reaches in front of the user. */
     public double reach() {
         return reach;
+    }
+
+    /** The farthest distance from the user, in any direction, at which anything can be inside the shape. */
+    public double farthest() {
+        return Math.max(reach, behind);
     }
 
     /**
@@ -88,7 +110,7 @@ public final class HitShape {
     private boolean inLine(double forwardX, double forwardZ, double centerX, double centerZ, double halfBox) {
         double along = centerX * forwardX + centerZ * forwardZ;
         double across = Math.abs(centerX * forwardZ - centerZ * forwardX);
-        return along + halfBox >= 0 && along - halfBox <= reach && across <= size / 2 + halfBox;
+        return along + halfBox >= -behind && along - halfBox <= reach && across <= size / 2 + halfBox;
     }
 
     private static double clamp(double value, double min, double max) {

@@ -5,6 +5,7 @@ import com.mahghuuuls.ashenskills.api.ChargeCurve;
 import com.mahghuuuls.ashenskills.api.SkillBehavior;
 import com.mahghuuuls.ashenskills.api.SkillDefinition;
 import com.mahghuuuls.ashenskills.api.SkillFlag;
+import com.mahghuuuls.ashenskills.api.SkillMotion;
 import com.mahghuuuls.ashenskills.api.SkillNumber;
 import com.mahghuuuls.ashenskills.api.SkillPhase;
 import com.mahghuuuls.ashenskills.attribute.SkillAttributes;
@@ -306,6 +307,69 @@ public final class SkillRuntime {
             messenger.cooldownChanged(player, cooldownMillis, cooldownMillis);
         }
         enteredPhase(player, session, cause);
+        beginMotion(player, session);
+    }
+
+    /** Asks the skill how it moves its user, now that the direction is fixed. */
+    private void beginMotion(EntityPlayerMP player, SkillSession session) {
+        SkillBehavior behavior = SkillRegistry.behaviorOf(session.skill().id());
+        SkillMotion motion = behavior == null
+                ? null : behavior.motionAtExecution(new RuntimeSkillContext(player, session, messenger));
+        if (motion == null) {
+            return;
+        }
+        MotionPlan plan = new MotionPlan(motion, session.facingYaw());
+        session.beginMotion(plan, player.posX, player.posZ);
+        Diagnostics.log("MOTION", "player={} skill={} state=begun distance={} pushTicks={} yaw={} x={} z={}",
+                player.getName(), session.skill().id(), motion.distance(), plan.pushTicks(), session.facingYaw(),
+                player.posX, player.posZ);
+    }
+
+    /**
+     * One tick of a skill's motion. The player's own client moves the player, as for every player
+     * movement in the game; the server sends it the speed, and the client moves with its normal
+     * collision. So the motion stops at solid blocks and the player is never placed anywhere.
+     *
+     * @return whether the player was pushed in this tick
+     */
+    private boolean tickMotion(EntityPlayerMP player, SkillSession session) {
+        MotionPlan plan = session.motion();
+        if (plan == null) {
+            return false;
+        }
+        MotionPlan.Step step = plan.stepAt(session.timeline().executionTicksElapsed());
+        if (step == MotionPlan.Step.PUSH) {
+            sendSpeed(player, plan.pushX(), plan.pushZ());
+            return true;
+        }
+        if (step == MotionPlan.Step.STOP) {
+            stopMotion(player, session, "travelled");
+        }
+        return false;
+    }
+
+    /** Ends a motion that still runs: the player stops. Called on every way out of the execution too. */
+    private void stopMotion(EntityPlayerMP player, SkillSession session, String cause) {
+        if (session.motion() == null) {
+            return;
+        }
+        double travelled = player == null ? Double.NaN : session.travelled(player.posX, player.posZ);
+        session.endMotion();
+        if (player != null) {
+            sendSpeed(player, 0.0, 0.0);
+        }
+        Diagnostics.log("MOTION", "player={} skill={} state=stopped cause={} travelled={}",
+                player == null ? session.playerId() : player.getName(), session.skill().id(), cause, travelled);
+    }
+
+    /**
+     * Tells the player's client its speed. The game's message carries all three directions, so
+     * the client's vertical speed becomes the one the server has for the player, each time.
+     */
+    private static void sendSpeed(EntityPlayerMP player, double x, double z) {
+        player.motionX = x;
+        player.motionZ = z;
+        player.velocityChanged = true;
     }
 
     /** Advances every running skill use by one server tick. */
@@ -324,12 +388,29 @@ public final class SkillRuntime {
                 continue;
             }
             if (session.phase() == SkillPhase.EXECUTION) {
+                // While the skill's own motion decides where the player is, being off the ground is
+                // the skill's doing. That ends when the motion is over and the player stands again.
+                boolean stateAllowed = isStateAllowed(player, session.skill());
+                if (session.placeExcused()) {
+                    if (stateAllowed && session.motionSettled()) {
+                        session.endPlaceExcuse();
+                        Diagnostics.log("MOTION", "player={} skill={} state=standsAgain",
+                                player.getName(), session.skill().id());
+                    }
+                    stateAllowed = isAbleToAct(player, session.skill());
+                }
                 String cause = hasSwitchedWeapon(player, session)
                         ? "weaponSwitched"
-                        : isStateAllowed(player, session.skill()) ? null : "stateNotAllowed";
+                        : stateAllowed ? null : "stateNotAllowed";
                 if (cause != null) {
                     interrupt(player, cause);
                 }
+            }
+            boolean pushed = false;
+            if (session.phase() == SkillPhase.EXECUTION) {
+                pushed = tickMotion(player, session);
+            } else if (session.stopOwed()) {
+                stopMotion(player, session, "travelled");
             }
             boolean wasExecuting = session.phase() == SkillPhase.EXECUTION;
             Step step = session.timeline().tick();
@@ -342,6 +423,10 @@ public final class SkillRuntime {
                 continue;
             }
             if (step == Step.EXECUTION_ENDED) {
+                if (pushed) {
+                    // A travel as long as the execution: its last push must still go out.
+                    session.oweStop();
+                }
                 enteredPhase(player, session, "executionCompleted");
             } else if (step == Step.FINISHED) {
                 end(session, player, "completed");
@@ -478,6 +563,9 @@ public final class SkillRuntime {
     }
 
     private void enteredPhase(EntityPlayerMP player, SkillSession session, String cause) {
+        if (session.phase() != SkillPhase.EXECUTION && !session.stopOwed()) {
+            stopMotion(player, session, "executionEnded");
+        }
         applySpeed(player, session.speedFraction());
         ActionLock.stopForbiddenUse(session, player);
         Diagnostics.log("PHASE", "player={} skill={} phase={} lengthTicks={} cause={} serverTick={} sneaking={}",
@@ -489,6 +577,7 @@ public final class SkillRuntime {
     /** The single way a skill use ends. The player is null when no longer on the server. */
     private void end(SkillSession session, EntityPlayerMP player, String cause) {
         sessions.remove(session.playerId());
+        stopMotion(player, session, cause);
         if (session.phase() == SkillPhase.PREPARATION) {
             restoreRegen(session, player);
         }
@@ -515,13 +604,15 @@ public final class SkillRuntime {
     }
 
     private static boolean isStateAllowed(EntityPlayerMP player, SkillDefinition skill) {
+        return isAbleToAct(player, skill) && skill.allowedStates().contains(stateOf(player));
+    }
+
+    /** The part of the state rule that does not ask where the player is: alive, not a spectator, riding only when allowed. */
+    private static boolean isAbleToAct(EntityPlayerMP player, SkillDefinition skill) {
         if (!player.isEntityAlive() || player.isSpectator()) {
             return false;
         }
-        if (player.isRiding() && !skill.flag(SkillFlag.MOUNTED_ALLOWED)) {
-            return false;
-        }
-        return skill.allowedStates().contains(stateOf(player));
+        return !player.isRiding() || skill.flag(SkillFlag.MOUNTED_ALLOWED);
     }
 
     private static String stateOf(EntityPlayerMP player) {

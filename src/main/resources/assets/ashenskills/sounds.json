@@ -51,6 +51,22 @@
       { "name": "entity/player/attack/strong5", "pitch": 0.6, "volume": 1.0 }
     ]
   },
+  "skill.piercing_lunge.swing": {
+    "category": "player",
+    "subtitle": "subtitles.ashenskills.piercing_lunge.swing",
+    "sounds": [
+      { "name": "entity/player/attack/sweep3", "pitch": 1.6, "volume": 0.8 },
+      { "name": "entity/player/attack/sweep5", "pitch": 1.7, "volume": 0.8 }
+    ]
+  },
+  "skill.piercing_lunge.impact": {
+    "category": "player",
+    "subtitle": "subtitles.ashenskills.piercing_lunge.impact",
+    "sounds": [
+      { "name": "entity/player/attack/crit1", "pitch": 1.5, "volume": 0.9 },
+      { "name": "entity/player/attack/crit3", "pitch": 1.6, "volume": 0.9 }
+    ]
+  },
   "skill.crushing_blow.charged": {
     "category": "player",
     "subtitle": "subtitles.ashenskills.crushing_blow.charged",

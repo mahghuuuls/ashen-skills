@@ -54,6 +54,10 @@ public enum SkillNumber {
      * for any damage a creature takes from another; this one comes in addition.
      */
     KNOCKBACK_STRENGTH("knockbackStrength", true),
+    /** How far the skill carries its user forward on open ground. Only skills that move their user have it. */
+    TRAVEL_DISTANCE("travelDistance", false),
+    /** How long that travel takes, in seconds from the start of the execution. Only skills that move their user have it. */
+    TRAVEL_TIME("travelTime", false),
     /** Full opening angle of an arc-shaped strike. Only skills with such a strike have it. */
     ARC("arc", false),
     /** Full width of a line-shaped strike. Only skills with such a strike have it. */
