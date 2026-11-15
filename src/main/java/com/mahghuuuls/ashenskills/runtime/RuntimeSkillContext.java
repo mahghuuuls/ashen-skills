@@ -45,6 +45,11 @@ final class RuntimeSkillContext implements SkillContext {
         return session.facingYaw();
     }
 
+    @Override
+    public double chargeBonus() {
+        return session.chargeBonus();
+    }
+
     /**
      * A strike is seen and heard as well as dealt: one swing in front of the user, at half the
      * strike's reach and at the middle of the user's height, and one impact at the middle of each
@@ -58,7 +63,7 @@ final class RuntimeSkillContext implements SkillContext {
         messenger.swingShown(player, session,
                 player.posX - Math.sin(yaw) * forward, player.posY + player.height / 2,
                 player.posZ + Math.cos(yaw) * forward);
-        return SkillDamage.strike(player, weapon(), session.skill(), shape, session.facingYaw(),
+        return SkillDamage.strike(player, weapon(), session.skill(), shape, session.facingYaw(), session.chargeBonus(),
                 SkillAttributes.points(player, SkillAttributes.SKILL_DAMAGE),
                 new SkillDamage.StrikeListener() {
                     @Override

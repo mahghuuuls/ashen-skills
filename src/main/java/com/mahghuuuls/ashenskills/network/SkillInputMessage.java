@@ -16,6 +16,11 @@ public final class SkillInputMessage implements IMessage {
     public static final byte KEY_UP = 1;
     /** The attack button, pressed during a preparation; the normal attack does not happen then. */
     public static final byte ATTACK_PRESS = 2;
+    /**
+     * The skill key stopped counting as held because a screen opened, not because the player let
+     * go of it. A preparation ends with it at no cost; nothing executes.
+     */
+    public static final byte KEY_LOST = 3;
 
     private byte action;
 

@@ -47,6 +47,12 @@ final class NetworkSkillMessenger implements SkillMessenger {
         sendCue(player, session, EffectCueMessage.IMPACT, "IMPACT", x, y, z, particles);
     }
 
+    @Override
+    public void chargeFullShown(EntityPlayerMP player, SkillSession session) {
+        sendCue(player, session, EffectCueMessage.FULL_CHARGE, "FULL_CHARGE",
+                player.posX, player.posY + player.height / 2, player.posZ, 0);
+    }
+
     /** The user is not among those "tracking" the user, hence the two sends. */
     private static void sendCue(
             EntityPlayerMP player, SkillSession session, byte kind, String kindName,

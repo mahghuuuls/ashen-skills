@@ -1,6 +1,7 @@
 package com.mahghuuuls.ashenskills.runtime;
 
 import com.mahghuuuls.ashenskills.api.ActivationKind;
+import com.mahghuuuls.ashenskills.api.ChargeCurve;
 import com.mahghuuuls.ashenskills.api.SkillBehavior;
 import com.mahghuuuls.ashenskills.api.SkillDefinition;
 import com.mahghuuuls.ashenskills.api.SkillFlag;
@@ -36,9 +37,10 @@ import net.minecraft.server.MinecraftServer;
  * Everything else asks it. Every way a skill use ends goes through {@link #end}, so cleanup cannot
  * be forgotten on one path.
  *
- * <p>An instant skill executes when it is asked for. A stance skill first enters a preparation
- * that costs nothing; the attack button then executes it, and everything that belongs to executing
- * (payment, cooldown, direction) happens at that moment, in {@link #execute}.
+ * <p>An instant skill executes when it is asked for. A stance skill and a charged skill first enter
+ * a preparation that costs nothing. The attack button executes a stance; letting go of the key
+ * executes a charge that lasted its minimum time. Everything that belongs to executing (payment,
+ * cooldown, direction, the worth of the charge) happens at that moment, in {@link #execute}.
  */
 public final class SkillRuntime {
 
@@ -129,17 +131,61 @@ public final class SkillRuntime {
     }
 
     /**
-     * The skill key came up. A preparation ends with it, at no cost.
+     * The skill key came up. A stance ends with it, at no cost. A charge that lasted its minimum
+     * time executes, when it can be paid for; a shorter charge, or one that cannot be paid for,
+     * ends at no cost.
      *
-     * @return true when a preparation ended
+     * @return true when a preparation ended or executed
      */
     public boolean onKeyReleased(EntityPlayerMP player) {
         SkillSession session = sessions.get(player.getUniqueID());
         if (session == null || session.phase() != SkillPhase.PREPARATION) {
             return false;
         }
-        end(session, player, "keyReleased");
+        if (session.skill().activation() == ActivationKind.CHARGED) {
+            releaseCharge(player, session);
+        } else {
+            end(session, player, "keyReleased");
+        }
         return true;
+    }
+
+    /**
+     * The skill key stopped counting as held without the player letting go of it (a screen opened).
+     * A preparation ends at no cost: a charge does not execute by this.
+     *
+     * @return true when a preparation ended
+     */
+    public boolean onKeyLost(EntityPlayerMP player) {
+        SkillSession session = sessions.get(player.getUniqueID());
+        if (session == null || session.phase() != SkillPhase.PREPARATION) {
+            return false;
+        }
+        end(session, player, "keyLost");
+        return true;
+    }
+
+    /** The key came up during a charge. The time charged is counted here, in server ticks, and nowhere else. */
+    private void releaseCharge(EntityPlayerMP player, SkillSession session) {
+        ChargeCurve curve = ChargeCurve.of(session.skill());
+        double chargedSeconds = secondsOf(session.ticksInPhase());
+        String endCause = preparationEndCause(player, session);
+        if (endCause == null && !curve.reachesMinimum(chargedSeconds)) {
+            endCause = "releasedEarly";
+        }
+        Diagnostics.log("CHARGE", "player={} skill={} chargedTicks={} chargedSeconds={} bonus={} result={}",
+                player.getName(), session.skill().id(), session.ticksInPhase(), chargedSeconds,
+                curve.bonus(chargedSeconds), endCause == null ? "release" : endCause);
+        if (endCause != null) {
+            end(session, player, endCause);
+            return;
+        }
+        RefusalReason unpaid = payAndExecute(player, session.skill(), null, session, "chargeReleased");
+        if (unpaid != null) {
+            // The key is up, so the charge cannot go on waiting for the payment as a stance does.
+            reportRefusal(player, session.skill().id().toString(), unpaid);
+            end(session, player, "unpaid");
+        }
     }
 
     /**
@@ -246,8 +292,12 @@ public final class SkillRuntime {
                     SkillAttributes.points(player, SkillAttributes.SKILL_HASTE));
             cooldowns.start(player, cooldownMillis);
         }
+        int preparedTicks = session.ticksInPhase();
         if (session.timeline().beginExecution()) {
             restoreRegen(session, player);
+            if (skill.activation() == ActivationKind.CHARGED) {
+                session.fixChargeBonus(ChargeCurve.of(skill).bonus(secondsOf(preparedTicks)));
+            }
         }
         session.fixFacing(player.rotationYaw);
         Diagnostics.log("ACTIVATION", "player={} skill={} result=accepted cooldownMs={} free={}",
@@ -307,10 +357,20 @@ public final class SkillRuntime {
             return;
         }
         session.timeline().tick();
+        if (session.skill().activation() == ActivationKind.CHARGED) {
+            if (ChargeCurve.of(session.skill())
+                    .becomesFullAtTick(session.ticksInPhase(), SessionTimeline.TICKS_PER_SECOND)) {
+                messenger.chargeFullShown(player, session);
+            }
+        }
         // A preparation has no length, so clients tell a current report of one from an old one by its age.
         if (session.ticksInPhase() % PhaseUpdateMessage.OPEN_ENDED_REPORT_TICKS == 0) {
             messenger.phaseChanged(player, session);
         }
+    }
+
+    private static double secondsOf(int ticks) {
+        return ticks / (double) SessionTimeline.TICKS_PER_SECOND;
     }
 
     /** Opens every window whose time has come. Stops when a hit ends or interrupts the skill use. */

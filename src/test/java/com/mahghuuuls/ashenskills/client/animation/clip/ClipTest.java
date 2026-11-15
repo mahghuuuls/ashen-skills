@@ -215,6 +215,27 @@ class ClipTest {
     }
 
     @Test
+    void theShippedCrushingBlowClipsLoadTheChargeClipLastsTheFullChargeAndNothingJumps() throws Exception {
+        SkillDefinition blow = BuiltInSkills.definitionOf("crushing_blow", DefaultsData.loadBundled());
+
+        for (String view : new String[] {"first", "third"}) {
+            Clip charge = ClipParser.parse(shipped("crushing_blow", view + "_preparation"));
+            Clip strike = ClipParser.parse(shipped("crushing_blow", view + "_execution"));
+            Clip recovery = ClipParser.parse(shipped("crushing_blow", view + "_recovery"));
+            // The charge clip plays at its own speed, so its end is the full charge.
+            assertEquals(blow.number(SkillNumber.FULL_CHARGE), charge.lengthSeconds(), EXACT);
+            assertEquals(blow.number(SkillNumber.EXECUTION_LENGTH), strike.lengthSeconds(), EXACT);
+            assertEquals(blow.number(SkillNumber.RECOVERY), recovery.lengthSeconds(), EXACT);
+            assertEquals(blow.number(SkillNumber.INTERRUPTED_RECOVERY),
+                    ClipParser.parse(shipped("crushing_blow", view + "_interrupted_recovery")).lengthSeconds(), EXACT);
+            assertEquals(ClipSampler.pose(charge, charge.lengthSeconds()).describe(),
+                    ClipSampler.pose(strike, 0).describe(), view);
+            assertEquals(ClipSampler.pose(strike, strike.lengthSeconds()).describe(),
+                    ClipSampler.pose(recovery, 0).describe(), view);
+        }
+    }
+
+    @Test
     void theShippedSlashHasItsStrikePoseAtTheHitTime() throws Exception {
         SkillDefinition slash = BuiltInSkills.definitionOf("powerful_slash", DefaultsData.loadBundled());
         double hitTime = slash.hitWindowSeconds().get(0);

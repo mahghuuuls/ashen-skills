@@ -22,6 +22,7 @@ public final class BuiltInSkills {
     static {
         IMPLEMENTED.put("powerful_slash", new ArcStrike());
         IMPLEMENTED.put("unsheathe", new ArcStrike());
+        IMPLEMENTED.put("crushing_blow", new ArcStrike());
     }
 
     private BuiltInSkills() {

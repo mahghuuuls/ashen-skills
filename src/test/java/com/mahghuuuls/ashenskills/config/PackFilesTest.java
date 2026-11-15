@@ -85,6 +85,42 @@ class PackFilesTest {
     }
 
     @Test
+    void aFullChargeBelowTheMinimumChargeIsReportedAndBothKeepTheSkillsOwnValues() {
+        ResourceLocation id = new ResourceLocation("ashenskills", "crushing_blow");
+        Map<ResourceLocation, SkillDefinition> registered = new LinkedHashMap<>();
+        registered.put(id, BuiltInSkills.definitionOf("crushing_blow", DEFAULTS));
+        List<String> problems = new ArrayList<>();
+
+        SkillDefinition changed = SkillOverrides.apply(
+                json("{'ashenskills:crushing_blow': {'minCharge': 3, 'fullCharge': 2.5, 'maxChargeBonus': 1.2}}"),
+                registered, DEFAULTS, DEFAULTS.builtInTypeIds(), problems).get(id);
+
+        assertEquals(1, problems.size(), problems.toString());
+        assertTrue(problems.get(0).contains("shorter than the minimum charge"), problems.get(0));
+        assertEquals(0.5, changed.number(SkillNumber.MIN_CHARGE));
+        assertEquals(2.0, changed.number(SkillNumber.FULL_CHARGE));
+        assertEquals(1.2, changed.number(SkillNumber.MAX_CHARGE_BONUS));
+
+        // One value alone can break the pair too: the file's value is compared with the skill's other one.
+        problems.clear();
+        SkillDefinition oneSided = SkillOverrides.apply(
+                json("{'ashenskills:crushing_blow': {'fullCharge': 0.3}}"),
+                registered, DEFAULTS, DEFAULTS.builtInTypeIds(), problems).get(id);
+        assertEquals(1, problems.size(), problems.toString());
+        assertTrue(problems.get(0).contains("'fullCharge', 0.3") && problems.get(0).contains("'minCharge', 0.5"),
+                problems.get(0));
+        assertEquals(2.0, oneSided.number(SkillNumber.FULL_CHARGE));
+
+        problems.clear();
+        SkillDefinition longer = SkillOverrides.apply(
+                json("{'ashenskills:crushing_blow': {'minCharge': 1, 'fullCharge': 4}}"),
+                registered, DEFAULTS, DEFAULTS.builtInTypeIds(), problems).get(id);
+        assertEquals(Collections.emptyList(), problems);
+        assertEquals(1.0, longer.number(SkillNumber.MIN_CHARGE));
+        assertEquals(4.0, longer.number(SkillNumber.FULL_CHARGE));
+    }
+
+    @Test
     void aPreparationValueOnAnInstantSkillIsAMistake() {
         List<String> problems = new ArrayList<>();
 

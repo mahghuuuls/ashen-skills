@@ -17,6 +17,13 @@ public interface SkillContext {
     float facingYaw();
 
     /**
+     * The extra share of damage this use earned by charging: 0 for a skill that is not charged, the
+     * skill's maximum for a full charge, and between the two for a shorter charge. {@link #hit}
+     * already applies it to the damage; it is here for what else a skill scales by its charge.
+     */
+    double chargeBonus();
+
+    /**
      * Strikes every valid target inside the shape once, with the skill's damage. The mod applies
      * its rules: the target cap, walls, PvP and team rules, the damage formula and the skill's
      * allowed on-hit effects.

@@ -34,5 +34,28 @@
       { "name": "entity/player/attack/crit3", "pitch": 1.25, "volume": 0.9 },
       { "name": "entity/player/attack/strong2", "pitch": 1.3, "volume": 0.9 }
     ]
+  },
+  "skill.crushing_blow.swing": {
+    "category": "player",
+    "subtitle": "subtitles.ashenskills.crushing_blow.swing",
+    "sounds": [
+      { "name": "entity/player/attack/sweep1", "pitch": 0.5, "volume": 1.0 },
+      { "name": "entity/player/attack/sweep7", "pitch": 0.5, "volume": 1.0 }
+    ]
+  },
+  "skill.crushing_blow.impact": {
+    "category": "player",
+    "subtitle": "subtitles.ashenskills.crushing_blow.impact",
+    "sounds": [
+      { "name": "random/anvil_land", "pitch": 0.55, "volume": 0.5 },
+      { "name": "entity/player/attack/strong5", "pitch": 0.6, "volume": 1.0 }
+    ]
+  },
+  "skill.crushing_blow.charged": {
+    "category": "player",
+    "subtitle": "subtitles.ashenskills.crushing_blow.charged",
+    "sounds": [
+      { "name": "random/orb", "pitch": 0.6, "volume": 0.5 }
+    ]
   }
 }

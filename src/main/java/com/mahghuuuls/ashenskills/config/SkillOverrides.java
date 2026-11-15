@@ -93,6 +93,18 @@ public final class SkillOverrides {
                 break;
             }
         }
+        Double minCharge = values.numbers.get(SkillNumber.MIN_CHARGE);
+        Double fullCharge = values.numbers.get(SkillNumber.FULL_CHARGE);
+        if (minCharge != null && fullCharge != null && fullCharge < minCharge) {
+            // Either value can be the one the file changed, so the message names both.
+            problems.add("skill '" + skill.id() + "': the full charge ('" + SkillNumber.FULL_CHARGE.configName() + "', "
+                    + fullCharge + " s) is shorter than the minimum charge ('" + SkillNumber.MIN_CHARGE.configName()
+                    + "', " + minCharge + " s); '"
+                    + SkillNumber.MIN_CHARGE.configName() + "' and '" + SkillNumber.FULL_CHARGE.configName()
+                    + "' both keep the skill's own values");
+            values.numbers.put(SkillNumber.MIN_CHARGE, skill.number(SkillNumber.MIN_CHARGE));
+            values.numbers.put(SkillNumber.FULL_CHARGE, skill.number(SkillNumber.FULL_CHARGE));
+        }
         return values.appliedTo(skill);
     }
 

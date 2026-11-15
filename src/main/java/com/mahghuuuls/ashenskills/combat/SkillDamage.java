@@ -64,13 +64,14 @@ public final class SkillDamage {
 
     /**
      * @param facingYaw the direction fixed when the skill executed
+     * @param chargeBonus the extra share of damage this use earned by charging; 0 for none
      * @param skillDamagePoints the user's Ashen Skill Damage, in percent points
      * @param listener told about each damaged target
      * @return how many targets took damage
      */
     public static int strike(
             EntityPlayer user, ItemStack weapon, SkillDefinition skill, HitShape shape, float facingYaw,
-            double skillDamagePoints, StrikeListener listener) {
+            double chargeBonus, double skillDamagePoints, StrikeListener listener) {
         int cap = Settings.general().getInt(SettingKey.HIT_TARGET_CAP_PER_WINDOW);
         Area area = new Area(shape, facingYaw,
                 skill.number(SkillNumber.REACH_BELOW), skill.number(SkillNumber.REACH_ABOVE));
@@ -80,7 +81,7 @@ public final class SkillDamage {
         // One strike is one attack for the critical-hit system: all its targets share one roll.
         CritGateway.around(critGateway, user, weapon, () -> {
             for (Entity target : selection.targets) {
-                float dealt = damage(user, weapon, skill, target, skillDamagePoints);
+                float dealt = damage(user, weapon, skill, target, chargeBonus, skillDamagePoints);
                 if (dealt >= 0) {
                     damagedCount[0]++;
                     listener.onDamaged(target);
@@ -103,7 +104,8 @@ public final class SkillDamage {
 
     /** @return the health the target lost, or -1 when the game refused the damage */
     private static float damage(
-            EntityPlayer user, ItemStack weapon, SkillDefinition skill, Entity target, double skillDamagePoints) {
+            EntityPlayer user, ItemStack weapon, SkillDefinition skill, Entity target, double chargeBonus,
+            double skillDamagePoints) {
         EntityLivingBase creature = livingOf(target);
         double enchantmentBonus = creature != null && skill.flag(SkillFlag.DAMAGE_ENCHANTMENTS)
                 ? EnchantmentHelper.getModifierForCreature(weapon, creature.getCreatureAttribute())
@@ -112,7 +114,7 @@ public final class SkillDamage {
                 user.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getAttributeValue(),
                 enchantmentBonus,
                 skill.number(SkillNumber.DAMAGE_MULTIPLIER),
-                0.0,
+                chargeBonus,
                 skillDamagePoints);
         float healthBefore = creature == null ? 0 : creature.getHealth();
         struckWithoutLooting = skill.flag(SkillFlag.LOOTING) ? null : creature;

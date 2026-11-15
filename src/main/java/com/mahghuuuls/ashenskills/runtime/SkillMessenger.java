@@ -25,6 +25,9 @@ public interface SkillMessenger {
      */
     void impactShown(EntityPlayerMP player, SkillSession session, double x, double y, double z, int particles);
 
+    /** The player's charge reached its full time. Seen and heard by clients, once per charge. */
+    void chargeFullShown(EntityPlayerMP player, SkillSession session);
+
     void refused(EntityPlayerMP player, RefusalReason reason);
 
     void cooldownChanged(EntityPlayerMP player, long remainingMillis, long lengthMillis);

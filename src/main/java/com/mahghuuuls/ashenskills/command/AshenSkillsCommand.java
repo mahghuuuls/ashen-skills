@@ -38,8 +38,8 @@ import net.minecraft.util.text.TextComponentString;
 /**
  * Operator command {@code /ashenskills}: shows what the mod knows about a player's weapon and
  * skill state, starts a player's skill for testing ({@code start <player>} acts as the skill key
- * going down, {@code start <player> release} as the key coming up, {@code start <player> attack} as
- * the attack button in a stance), clears a stuck phase or a cooldown, and asks a player's client
+ * going down, {@code start <player> release} as the key coming up, {@code start <player> lost} as
+ * a screen taking the key away, {@code start <player> attack} as the attack button in a stance), clears a stuck phase or a cooldown, and asks a player's client
  * to use its animation check controls.
  */
 public final class AshenSkillsCommand extends CommandBase {
@@ -82,6 +82,11 @@ public final class AshenSkillsCommand extends CommandBase {
             EntityPlayerMP player = getPlayer(server, sender, args[1]);
             String result = "start player=" + player.getName() + " keyReleased endedPreparation="
                     + runtime.onKeyReleased(player);
+            reply(sender, result);
+            audit(sender, result);
+        } else if ("start".equals(args[0]) && args.length == 3 && "lost".equals(args[2])) {
+            EntityPlayerMP player = getPlayer(server, sender, args[1]);
+            String result = "start player=" + player.getName() + " keyLost endedPreparation=" + runtime.onKeyLost(player);
             reply(sender, result);
             audit(sender, result);
         } else if ("start".equals(args[0]) && args.length == 3 && "attack".equals(args[2])) {
@@ -228,7 +233,7 @@ public final class AshenSkillsCommand extends CommandBase {
             return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
         }
         if (args.length == 3 && "start".equals(args[0])) {
-            return getListOfStringsMatchingLastWord(args, "release", "attack");
+            return getListOfStringsMatchingLastWord(args, "release", "lost", "attack");
         }
         if (args.length == 3 && "clear".equals(args[0])) {
             return getListOfStringsMatchingLastWord(args, "phase", "cooldown");

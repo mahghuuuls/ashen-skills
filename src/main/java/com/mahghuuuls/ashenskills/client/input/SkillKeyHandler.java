@@ -15,8 +15,8 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.lwjgl.input.Keyboard;
 
 /**
- * The skill key. Tells the server when the key goes down and when it comes up; the server decides
- * what that means.
+ * The skill key. Tells the server when the key goes down, when it comes up, and when a screen
+ * that opened took it away; the server decides what each means.
  */
 public final class SkillKeyHandler {
 
@@ -54,11 +54,14 @@ public final class SkillKeyHandler {
             wasDown = false;
             return;
         }
-        boolean down = skillKey.isKeyDown() && minecraft.currentScreen == null;
+        boolean screenOpen = minecraft.currentScreen != null;
+        boolean down = skillKey.isKeyDown() && !screenOpen;
         if (down != wasDown) {
             wasDown = down;
-            AshenNetwork.channel().sendToServer(
-                    new SkillInputMessage(down ? SkillInputMessage.KEY_DOWN : SkillInputMessage.KEY_UP));
+            // An opened screen takes the key away; that is not the player letting go of it.
+            byte action = down ? SkillInputMessage.KEY_DOWN
+                    : screenOpen ? SkillInputMessage.KEY_LOST : SkillInputMessage.KEY_UP;
+            AshenNetwork.channel().sendToServer(new SkillInputMessage(action));
         }
     }
 }

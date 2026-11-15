@@ -24,6 +24,8 @@ public final class SkillDefinition {
 
     private static final SkillNumber[] PREPARATION_NUMBERS = {
         SkillNumber.PREPARATION_SPEED, SkillNumber.PREPARATION_STAMINA_REGEN};
+    private static final SkillNumber[] CHARGE_NUMBERS = {
+        SkillNumber.MIN_CHARGE, SkillNumber.FULL_CHARGE, SkillNumber.MAX_CHARGE_BONUS};
     private static final SkillFlag[] PREPARATION_FLAGS = {
         SkillFlag.PREPARATION_CANCELED_BY_DAMAGE, SkillFlag.PREPARATION_CANCELED_BY_KNOCKBACK};
 
@@ -106,7 +108,8 @@ public final class SkillDefinition {
 
     /**
      * Configuration names of the required numbers and rules this skill still lacks. Empty when
-     * complete. A skill that is not instant also needs the numbers and rules of its preparation.
+     * complete. A skill that is not instant also needs the numbers and rules of its preparation, and a
+     * charged skill the three numbers of its charge.
      */
     public List<String> missingValues() {
         List<String> missing = new ArrayList<>();
@@ -129,6 +132,13 @@ public final class SkillDefinition {
             }
             for (SkillFlag key : PREPARATION_FLAGS) {
                 if (!flags.containsKey(key)) {
+                    missing.add(key.configName());
+                }
+            }
+        }
+        if (activation == ActivationKind.CHARGED) {
+            for (SkillNumber key : CHARGE_NUMBERS) {
+                if (!numbers.containsKey(key)) {
                     missing.add(key.configName());
                 }
             }

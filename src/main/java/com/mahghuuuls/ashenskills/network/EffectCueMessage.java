@@ -18,6 +18,8 @@ public final class EffectCueMessage implements IMessage {
     public static final byte SWING = 1;
     /** A strike damaged a target. The place is the middle of the target. */
     public static final byte IMPACT = 2;
+    /** A charge reached its full time. The place is the user. */
+    public static final byte FULL_CHARGE = 3;
 
     private byte kind;
     private int userEntityId;

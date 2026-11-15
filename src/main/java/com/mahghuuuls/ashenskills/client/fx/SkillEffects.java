@@ -15,8 +15,8 @@ import net.minecraft.util.SoundEvent;
 /**
  * What a skill's moments look and sound like on this client. A swing plays the skill's swing sound
  * and one sweep mark; an impact plays the skill's impact sound and a burst of sparks at the target,
- * within the player's particle limit for one skill use. Only particles and sounds: no block and no
- * entity is changed.
+ * within the player's particle limit for one skill use; a full charge plays the skill's charged
+ * sound and a few sparks at the user. Only particles and sounds: no block and no entity is changed.
  */
 public final class SkillEffects {
 
@@ -25,6 +25,8 @@ public final class SkillEffects {
     /** How fast a spark may fly off, in blocks per tick. A look, not a game rule. */
     private static final double SPARK_SPEED = 0.25;
 
+    /** How many sparks a full charge shows at the user. A look, not a game rule. */
+    private static final int FULL_CHARGE_SPARKS = 6;
     private static final ParticleBudget BUDGET = new ParticleBudget();
 
     private SkillEffects() {
@@ -38,6 +40,10 @@ public final class SkillEffects {
             byte kind, int userEntityId, int useId, String skillId, double x, double y, double z, int particles) {
         WorldClient world = Minecraft.getMinecraft().world;
         if (world == null) {
+            return;
+        }
+        if (kind == EffectCueMessage.FULL_CHARGE) {
+            playFullCharge(world, userEntityId, useId, skillId, x, y, z);
             return;
         }
         boolean impact = kind == EffectCueMessage.IMPACT;
@@ -68,6 +74,21 @@ public final class SkillEffects {
         Diagnostics.log("CLIENT_CUE", "kind={} user={} use={} skill={} sound={} particles={} x={} y={} z={}",
                 impact ? "IMPACT" : "SWING", userEntityId, useId, skillId, sound.getSoundName(), spawned,
                 round(x), round(y), round(z));
+    }
+
+    private static void playFullCharge(
+            WorldClient world, int userEntityId, int useId, String skillId, double x, double y, double z) {
+        SoundEvent sound = SkillSounds.of(skillId, SkillSounds.CHARGED);
+        world.playSound(x, y, z, sound, SoundCategory.PLAYERS, 0.7F, 1.0F, false);
+        Random random = world.rand;
+        for (int i = 0; i < FULL_CHARGE_SPARKS; i++) {
+            world.spawnParticle(
+                    EnumParticleTypes.CRIT_MAGIC,
+                    x + (random.nextDouble() - 0.5) * 2 * SPARK_SPREAD, y + random.nextDouble() * 0.8,
+                    z + (random.nextDouble() - 0.5) * 2 * SPARK_SPREAD, 0.0, SPARK_SPEED / 2, 0.0);
+        }
+        Diagnostics.log("CLIENT_CUE", "kind=FULL_CHARGE user={} use={} skill={} sound={} particles={} x={} y={} z={}",
+                userEntityId, useId, skillId, sound.getSoundName(), FULL_CHARGE_SPARKS, round(x), round(y), round(z));
     }
 
     private static double round(double value) {

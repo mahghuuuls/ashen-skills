@@ -4,6 +4,7 @@ import com.mahghuuuls.ashenskills.ashenforge.AshenForgeTile;
 import com.mahghuuuls.ashenskills.ashenforge.ForgeContainer;
 import com.mahghuuuls.ashenskills.client.gui.ForgeNotices;
 import com.mahghuuuls.ashenskills.client.gui.ForgeScreen;
+import com.mahghuuuls.ashenskills.client.hud.ChargeBar;
 import com.mahghuuuls.ashenskills.client.hud.SkillHud;
 import com.mahghuuuls.ashenskills.api.SkillPhase;
 import com.mahghuuuls.ashenskills.client.animation.ClipLibrary;
@@ -36,6 +37,7 @@ public class ClientProxy extends CommonProxy {
         CameraEffects.register();
         ServerSettings.register();
         SkillHud.register();
+        ChargeBar.register();
         ForgeNotices.register();
         ClientRegistry.bindTileEntitySpecialRenderer(AshenForgeTile.class, new ForgeRenderer());
     }

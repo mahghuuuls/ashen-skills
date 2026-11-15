@@ -19,6 +19,7 @@ public final class SkillSession {
     private final int hotbarSlot;
     private final Item weaponItem;
     private float facingYaw;
+    private double chargeBonus;
     private final HitSchedule hitSchedule;
     private final int useId;
 
@@ -85,6 +86,16 @@ public final class SkillSession {
     /** Called at the moment the skill executes: the direction is fixed then, not when a stance began. */
     void fixFacing(float yawAtExecution) {
         facingYaw = yawAtExecution;
+    }
+
+    /** The extra share of damage this use earned by charging; 0 until a charged skill executes, and for other skills. */
+    double chargeBonus() {
+        return chargeBonus;
+    }
+
+    /** Called at the moment a charged skill executes, with what its charge is worth. */
+    void fixChargeBonus(double bonusAtExecution) {
+        chargeBonus = bonusAtExecution;
     }
 
     HitSchedule hitSchedule() {

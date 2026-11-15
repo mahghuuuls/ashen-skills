@@ -20,8 +20,11 @@ public final class SkillSounds {
     public static final String SWING = "swing";
     /** The moment a strike damages a target. */
     public static final String IMPACT = "impact";
+    /** The moment a charge reaches its full time. */
+    public static final String CHARGED = "charged";
 
-    private static final String[] BUILT_IN_SKILLS = {"powerful_slash", "unsheathe"};
+    private static final String[] BUILT_IN_SKILLS = {"powerful_slash", "unsheathe", "crushing_blow"};
+    private static final String[] BUILT_IN_CHARGED_SKILLS = {"crushing_blow"};
 
     private SkillSounds() {
     }
@@ -46,9 +49,16 @@ public final class SkillSounds {
     public static void onRegisterSounds(RegistryEvent.Register<SoundEvent> event) {
         for (String skill : BUILT_IN_SKILLS) {
             for (String moment : new String[] {SWING, IMPACT}) {
-                ResourceLocation name = nameOf(Tags.MOD_ID + ":" + skill, moment);
-                event.getRegistry().register(new SoundEvent(name).setRegistryName(name));
+                register(event, skill, moment);
             }
         }
+        for (String skill : BUILT_IN_CHARGED_SKILLS) {
+            register(event, skill, CHARGED);
+        }
+    }
+
+    private static void register(RegistryEvent.Register<SoundEvent> event, String skill, String moment) {
+        ResourceLocation name = nameOf(Tags.MOD_ID + ":" + skill, moment);
+        event.getRegistry().register(new SoundEvent(name).setRegistryName(name));
     }
 }

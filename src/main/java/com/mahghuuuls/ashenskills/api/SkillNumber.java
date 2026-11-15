@@ -29,6 +29,16 @@ public enum SkillNumber {
      * leaves it. Only skills that are not instant have it.
      */
     PREPARATION_STAMINA_REGEN("preparationStaminaRegen", false),
+    /** The shortest charge, in seconds, that executes when the key is released. Only charged skills have it. */
+    MIN_CHARGE("minCharge", false),
+    /**
+     * The charge, in seconds, that gives the whole charge bonus; a value below the minimum counts as
+     * the minimum. Only charged skills have it. A charged skill also needs a sound named
+     * {@code <namespace>:skill.<name>.charged} for the moment its charge is full.
+     */
+    FULL_CHARGE("fullCharge", false),
+    /** The extra share of damage at full charge: 0.8 for 80 percent more. Only charged skills have it. */
+    MAX_CHARGE_BONUS("maxChargeBonus", false),
     /** Weapon damage is multiplied by this for each hit of the skill. */
     DAMAGE_MULTIPLIER("damageMultiplier", true),
     /** How far the skill's strike reaches. */

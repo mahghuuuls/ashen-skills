@@ -60,6 +60,8 @@ public final class SkillRuntimeHooks implements SkillInputMessage.Receiver {
             runtime.onKeyReleased(player);
         } else if (action == SkillInputMessage.ATTACK_PRESS) {
             runtime.onAttackPressed(player);
+        } else if (action == SkillInputMessage.KEY_LOST) {
+            runtime.onKeyLost(player);
         }
     }
 

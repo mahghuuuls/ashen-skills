@@ -121,15 +121,45 @@ class BuiltInSkillsTest {
     }
 
     @Test
-    void aChargedSkillIsRefusedAtRegistrationWithAReason() {
-        SkillDefinition charged = SkillDefinition.builder(
-                new net.minecraft.util.ResourceLocation("test", "charged_blow"), ActivationKind.CHARGED).build();
+    void aChargedSkillWithoutItsChargeValuesIsRefusedAtRegistration() {
+        SkillDefinition.Builder charged = SkillDefinition.builder(
+                new net.minecraft.util.ResourceLocation("test", "charged_blow"), ActivationKind.CHARGED);
+        for (SkillNumber number : SkillNumber.values()) {
+            if (number.isRequiredForEverySkill()) {
+                charged.number(number, 1);
+            }
+        }
+        for (SkillFlag flag : SkillFlag.values()) {
+            charged.flag(flag, false);
+        }
+        charged.number(SkillNumber.PREPARATION_SPEED, 0.2).number(SkillNumber.PREPARATION_STAMINA_REGEN, 0);
+        SkillDefinition incomplete = charged.build();
 
+        assertEquals(java.util.Arrays.asList("minCharge", "fullCharge", "maxChargeBonus"), incomplete.missingValues());
         IllegalStateException refusal = assertThrows(IllegalStateException.class,
-                () -> SkillRegistry.register(charged, (context, window) -> { }));
+                () -> SkillRegistry.register(incomplete, (context, window) -> { }));
+        org.junit.jupiter.api.Assertions.assertTrue(refusal.getMessage().contains("minCharge"), refusal.getMessage());
+        org.junit.jupiter.api.Assertions.assertNull(SkillRegistry.get(incomplete.id()));
+    }
 
-        org.junit.jupiter.api.Assertions.assertTrue(refusal.getMessage().contains("charged skill"), refusal.getMessage());
-        org.junit.jupiter.api.Assertions.assertNull(SkillRegistry.get(charged.id()));
+    @Test
+    void theShippedCrushingBlowIsACompleteChargedSkillForWarhammerAndMace() {
+        SkillDefinition blow = BuiltInSkills.definitionOf("crushing_blow", DefaultsData.loadBundled());
+
+        assertEquals("ashenskills:crushing_blow", blow.id().toString());
+        assertEquals(ActivationKind.CHARGED, blow.activation());
+        assertEquals(set("warhammer", "mace"), blow.weaponTypes());
+        assertEquals(java.util.Collections.emptyList(), blow.missingValues());
+        assertEquals(java.util.Arrays.asList(0.25), blow.hitWindowSeconds());
+        assertEquals(1.5, blow.number(SkillNumber.DAMAGE_MULTIPLIER));
+        assertEquals(0.5, blow.number(SkillNumber.MIN_CHARGE));
+        assertEquals(2.0, blow.number(SkillNumber.FULL_CHARGE));
+        assertEquals(0.8, blow.number(SkillNumber.MAX_CHARGE_BONUS));
+        assertEquals(0.2, blow.number(SkillNumber.PREPARATION_SPEED));
+        assertEquals(0.0, blow.number(SkillNumber.PREPARATION_STAMINA_REGEN));
+        assertEquals(false, blow.flag(SkillFlag.PREPARATION_CANCELED_BY_DAMAGE));
+        assertEquals(false, blow.flag(SkillFlag.PREPARATION_CANCELED_BY_KNOCKBACK));
+        assertEquals(60.0, blow.number(SkillNumber.ARC));
     }
 
     @Test
