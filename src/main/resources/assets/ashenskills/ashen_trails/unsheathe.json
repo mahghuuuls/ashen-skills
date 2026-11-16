@@ -1,0 +1,16 @@
+{
+  "startAngle": -100,
+  "endAngle": 110,
+  "innerRadius": 1.0,
+  "outerRadius": 2.8,
+  "height": 1.1,
+  "tilt": 25,
+  "sweep": 0.2,
+  "fade": 0.3,
+  "color": [
+    255,
+    140,
+    50
+  ],
+  "sparks": 10
+}

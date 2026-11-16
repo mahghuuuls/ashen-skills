@@ -14,9 +14,9 @@ import net.minecraft.util.SoundEvent;
 
 /**
  * What a skill's moments look and sound like on this client. A swing plays the skill's swing sound
- * and one sweep mark; an impact plays the skill's impact sound and a burst of sparks at the target,
+ * and, for a skill without a cut trail, one sweep mark; an impact plays the skill's impact sound and a burst of sparks at the target,
  * within the player's particle limit for one skill use; a full charge plays the skill's charged
- * sound and a few sparks at the user. Only particles and sounds: no block and no entity is changed.
+ * sound and a few sparks at the user. Only particles, light and sounds: no block and no entity is changed.
  */
 public final class SkillEffects {
 
@@ -67,6 +67,9 @@ public final class SkillEffects {
                         random.nextDouble() * SPARK_SPEED,
                         (random.nextDouble() - 0.5) * 2 * SPARK_SPEED);
             }
+        } else if (CutTrails.has(skillId)) {
+            // The skill's own trail is the mark of this cut.
+            spawned = 0;
         } else {
             world.spawnParticle(EnumParticleTypes.SWEEP_ATTACK, x, y, z, 0.0, 0.0, 0.0);
             spawned = 1;
@@ -95,8 +98,9 @@ public final class SkillEffects {
         return Math.round(value * 100.0) / 100.0;
     }
 
-    /** Forgets the particle counts; for leaving a world. */
+    /** Forgets the particle counts and the trails in the air; for leaving a world. */
     public static void reset() {
         BUDGET.clear();
+        CutTrails.reset();
     }
 }

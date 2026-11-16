@@ -2,14 +2,15 @@ package com.mahghuuuls.ashenskills.client;
 
 import com.mahghuuuls.ashenskills.ashenforge.AshenForgeTile;
 import com.mahghuuuls.ashenskills.ashenforge.ForgeContainer;
+import com.mahghuuuls.ashenskills.api.SkillPhase;
 import com.mahghuuuls.ashenskills.client.gui.ForgeNotices;
 import com.mahghuuuls.ashenskills.client.gui.ForgeScreen;
 import com.mahghuuuls.ashenskills.client.hud.ChargeBar;
 import com.mahghuuuls.ashenskills.client.hud.SkillHud;
-import com.mahghuuuls.ashenskills.api.SkillPhase;
 import com.mahghuuuls.ashenskills.client.animation.ClipLibrary;
 import com.mahghuuuls.ashenskills.client.animation.PoseControls;
 import com.mahghuuuls.ashenskills.client.fx.CameraEffects;
+import com.mahghuuuls.ashenskills.client.fx.CutTrails;
 import com.mahghuuuls.ashenskills.client.fx.SkillEffects;
 import com.mahghuuuls.ashenskills.client.hud.RefusalDisplay;
 import com.mahghuuuls.ashenskills.client.input.SkillInputLock;
@@ -36,6 +37,7 @@ public class ClientProxy extends CommonProxy {
         SkillInputLock.register();
         FirstPersonSkillRenderer.register();
         CameraEffects.register();
+        CutTrails.register();
         ServerSettings.register();
         SkillIcons.register();
         SkillHud.register();
@@ -81,6 +83,7 @@ public class ClientProxy extends CommonProxy {
                 ClientSkillState.setPhase(
                         entityId, skillId, phaseCode, elapsedTicks, lengthTicks, attackLocked, jumpLocked,
                         sneakLocked);
+                CutTrails.onPhase(entityId, skillId, phaseCode, elapsedTicks);
             }
         });
     }

@@ -9,7 +9,7 @@ import com.mahghuuuls.ashenskills.api.SkillNumber;
 import com.mahghuuuls.ashenskills.config.DefaultsData;
 import com.mahghuuuls.ashenskills.config.DefaultsData.SkillEntry;
 import com.mahghuuuls.ashenskills.skill.builtin.ArcStrike;
-import com.mahghuuuls.ashenskills.skill.builtin.PiercingLunge;
+import com.mahghuuuls.ashenskills.skill.builtin.DashStrike;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import net.minecraft.util.ResourceLocation;
@@ -22,12 +22,17 @@ public final class BuiltInSkills {
 
     static {
         IMPLEMENTED.put("powerful_slash", new ArcStrike());
-        IMPLEMENTED.put("unsheathe", new ArcStrike());
+        IMPLEMENTED.put("unsheathe", new DashStrike());
         IMPLEMENTED.put("crushing_blow", new ArcStrike());
-        IMPLEMENTED.put("piercing_lunge", new PiercingLunge());
+        IMPLEMENTED.put("piercing_lunge", new DashStrike());
     }
 
     private BuiltInSkills() {
+    }
+
+    /** @return the behavior of the shipped skill with that name in the defaults file, or null */
+    static SkillBehavior behaviorOf(String name) {
+        return IMPLEMENTED.get(name);
     }
 
     public static void registerAll(DefaultsData defaults) {

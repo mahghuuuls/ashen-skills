@@ -15,7 +15,7 @@ import com.mahghuuuls.ashenskills.api.SkillNumber;
 import com.mahghuuuls.ashenskills.config.DefaultsData;
 import com.mahghuuuls.ashenskills.runtime.MotionPlan.Step;
 import com.mahghuuuls.ashenskills.skill.BuiltInSkills;
-import com.mahghuuuls.ashenskills.skill.builtin.PiercingLunge;
+import com.mahghuuuls.ashenskills.skill.builtin.DashStrike;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.entity.player.EntityPlayer;
@@ -193,7 +193,7 @@ class MotionPlanTest {
                 return 0;
             }
         };
-        PiercingLunge behavior = new PiercingLunge();
+        DashStrike behavior = new DashStrike();
 
         SkillMotion motion = behavior.motionAtExecution(context);
         assertEquals(4.0, motion.distance());

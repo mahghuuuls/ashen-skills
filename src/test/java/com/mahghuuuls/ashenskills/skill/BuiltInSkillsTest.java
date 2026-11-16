@@ -109,9 +109,20 @@ class BuiltInSkillsTest {
         assertEquals(ActivationKind.STANCE, unsheathe.activation());
         assertEquals(set("katana"), unsheathe.weaponTypes());
         assertEquals(java.util.Collections.emptyList(), unsheathe.missingValues());
-        assertEquals(java.util.Arrays.asList(0.15), unsheathe.hitWindowSeconds());
+        assertEquals(java.util.Arrays.asList(0.3), unsheathe.hitWindowSeconds());
         assertEquals(2.0, unsheathe.number(SkillNumber.DAMAGE_MULTIPLIER));
-        assertEquals(90.0, unsheathe.number(SkillNumber.ARC));
+        // The cut is made on a short dash: a wide band along the dash, not an arc on the spot.
+        assertEquals(2.5, unsheathe.number(SkillNumber.REACH));
+        assertEquals(3.0, unsheathe.number(SkillNumber.WIDTH));
+        assertEquals(3.0, unsheathe.number(SkillNumber.TRAVEL_DISTANCE));
+        assertEquals(0.2, unsheathe.number(SkillNumber.TRAVEL_TIME));
+        // The dash is not steered: no walking speed while it runs.
+        assertEquals(0.0, unsheathe.number(SkillNumber.EXECUTION_SPEED));
+        // The skill that carries its user and cuts a band, not the arc on the spot.
+        assertEquals(com.mahghuuuls.ashenskills.skill.builtin.DashStrike.class, BuiltInSkills.behaviorOf("unsheathe").getClass());
+        assertEquals(com.mahghuuuls.ashenskills.skill.builtin.DashStrike.class, BuiltInSkills.behaviorOf("piercing_lunge").getClass());
+        assertEquals(com.mahghuuuls.ashenskills.skill.builtin.ArcStrike.class, BuiltInSkills.behaviorOf("powerful_slash").getClass());
+        assertEquals(com.mahghuuuls.ashenskills.skill.builtin.ArcStrike.class, BuiltInSkills.behaviorOf("crushing_blow").getClass());
         assertEquals(12.0, unsheathe.number(SkillNumber.STAMINA_COST));
         assertEquals(10.0, unsheathe.number(SkillNumber.COOLDOWN));
         assertEquals(0.5, unsheathe.number(SkillNumber.PREPARATION_SPEED));

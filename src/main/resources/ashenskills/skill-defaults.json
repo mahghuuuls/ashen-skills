@@ -68,8 +68,10 @@
       "category": "offensive",
       "weaponTypes": ["katana"],
       "damageMultiplier": 2.0,
-      "reach": 3.5,
-      "arc": 90,
+      "reach": 2.5,
+      "width": 3.0,
+      "travelDistance": 3.0,
+      "travelTime": 0.2,
       "staminaCost": 12,
       "manaCost": 0,
       "cooldown": 10,
@@ -79,12 +81,12 @@
       "preparationStaminaRegen": 0.2,
       "preparationCanceledByDamage": true,
       "preparationCanceledByKnockback": true,
-      "hitWindows": [ { "at": 0.15 } ],
+      "hitWindows": [ { "at": 0.3 } ],
       "executionLength": 0.35,
-      "executionSpeed": 0.2,
+      "executionSpeed": 0.0,
       "recoverySpeed": 0.5,
       "knockbackStrength": 0.4,
-      "source": "brief 10.17, 10.18, 10.8, 10.24, 7.9; reach, arc, timing, cancel rules, speeds and knockback are proposals"
+      "source": "brief 10.17, 10.18, 10.8, 10.24, 7.9; owner decision 2026-11-16 (campaign C, card C2): dash and wide cut; reach, width, travel, timing, cancel rules, speeds and knockback are proposals"
     },
     "piercing_lunge": {
       "activation": "instant",

@@ -7,10 +7,11 @@ import com.mahghuuuls.ashenskills.api.SkillMotion;
 import com.mahghuuuls.ashenskills.api.SkillNumber;
 
 /**
- * A thrust that carries the user forward and strikes what stands in a narrow line: from where the
- * thrust began to the skill's reach ahead of the user, so what the user ran through is struck too.
+ * A strike that carries the user forward and hits what stands in a band: from where the dash
+ * began to the skill's reach ahead of the user, as wide as the skill's width, so what the user
+ * ran through is struck too. A narrow band is a thrust; a wide one is a cut made on the run.
  */
-public final class PiercingLunge implements SkillBehavior {
+public final class DashStrike implements SkillBehavior {
 
     @Override
     public SkillMotion motionAtExecution(SkillContext context) {
