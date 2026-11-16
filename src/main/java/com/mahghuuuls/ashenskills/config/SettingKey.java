@@ -24,6 +24,22 @@ public enum SettingKey {
     SKILL_HUD("skillHud", Kind.BOOLEAN, "Shows the skill of the held weapon near the hotbar."),
     CHARGE_BAR("chargeBar", Kind.BOOLEAN, "Shows the charge bar near the crosshair while charging a skill."),
     COOLDOWN_NUMBER("cooldownNumber", Kind.BOOLEAN, "Shows the seconds left on the skill cooldown."),
+    SKILL_HUD_OFFSET_X("skillHudOffsetX", Kind.INTEGER,
+            "Moves the skill HUD right (plus) or left (minus) from its normal place, in GUI pixels."
+                    + " The message that says why a skill did not start moves with it."),
+    SKILL_HUD_OFFSET_Y("skillHudOffsetY", Kind.INTEGER,
+            "Moves the skill HUD down (plus) or up (minus) from its normal place, in GUI pixels."
+                    + " The message that says why a skill did not start moves with it."),
+    SKILL_HUD_SCALE("skillHudScale", Kind.DECIMAL,
+            "Size of the skill HUD and of the message that says why a skill did not start. 1.0 is the normal size."),
+    CHARGE_BAR_OFFSET_X("chargeBarOffsetX", Kind.INTEGER,
+            "Moves the charge bar right (plus) or left (minus) from its normal place, in GUI pixels."),
+    CHARGE_BAR_OFFSET_Y("chargeBarOffsetY", Kind.INTEGER,
+            "Moves the charge bar down (plus) or up (minus) from its normal place, in GUI pixels."),
+    CHARGE_BAR_SCALE("chargeBarScale", Kind.DECIMAL, "Size of the charge bar. 1.0 is the normal size."),
+    NO_TYPE_TOOLTIP("noTypeTooltip", Kind.BOOLEAN,
+            "Shows the tooltip line 'No type' on an item without a weapon type: at an Ashen Forge, in advanced tooltips,"
+                    + " and on an item that carries a skill. For pack makers and tests."),
     MAX_IMPACT_PARTICLES_PER_SKILL("maxImpactParticlesPerSkill", Kind.INTEGER,
             "Most impact particles one skill use can spawn on this client."),
     ANIMATION_CHECK_CONTROLS("animationCheckControls", Kind.BOOLEAN,

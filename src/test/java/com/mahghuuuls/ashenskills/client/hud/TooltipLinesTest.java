@@ -40,38 +40,53 @@ class TooltipLinesTest {
     void aKatanaWithUnsheatheShowsItsTypesAndItsSkill() {
         // The types are shown in alphabetical order, whatever order the rules give them in.
         assertEquals(Arrays.asList("TYPES katana, sword", "SKILL " + UNSHEATHE),
-                shown(TooltipLines.of(types("sword", "katana"), Status.COMPATIBLE, UNSHEATHE, false)));
+                shown(TooltipLines.of(types("sword", "katana"), Status.COMPATIBLE, UNSHEATHE, false, true)));
     }
 
     @Test
     void aStickGetsNoLineInANormalTooltip() {
-        assertEquals(Collections.emptyList(), shown(TooltipLines.of(NO_TYPES, Status.NONE, null, false)));
+        assertEquals(Collections.emptyList(), shown(TooltipLines.of(NO_TYPES, Status.NONE, null, false, true)));
     }
 
     @Test
-    void aStickIsMarkedAsUnclassifiedAtAForgeOrInAdvancedTooltips() {
-        assertEquals(Collections.singletonList("UNCLASSIFIED"), shown(TooltipLines.of(NO_TYPES, Status.NONE, null, true)));
+    void withTheMarkAskedForAStickIsMarkedAsUnclassifiedAtAForgeOrInAdvancedTooltips() {
+        assertEquals(Collections.singletonList("UNCLASSIFIED"), shown(TooltipLines.of(NO_TYPES, Status.NONE, null, true, true)));
     }
 
     @Test
     void aWeaponWithoutASkillShowsOnlyItsTypes() {
-        assertEquals(Collections.singletonList("TYPES sword"), shown(TooltipLines.of(types("sword"), Status.NONE, null, false)));
-        assertEquals(Collections.singletonList("TYPES sword"), shown(TooltipLines.of(types("sword"), Status.NONE, null, true)));
+        assertEquals(Collections.singletonList("TYPES sword"), shown(TooltipLines.of(types("sword"), Status.NONE, null, false, true)));
+        assertEquals(Collections.singletonList("TYPES sword"), shown(TooltipLines.of(types("sword"), Status.NONE, null, true, true)));
     }
 
     @Test
     void aSkillThatDoesNotFitIsMarkedAndTheItemStillShowsWhatItIs() {
         assertEquals(Arrays.asList("TYPES axe", "SKILL_INCOMPATIBLE " + UNSHEATHE),
-                shown(TooltipLines.of(types("axe"), Status.INCOMPATIBLE, UNSHEATHE, false)));
-        // An item with a skill and no type says so in a normal tooltip too: that is why the skill does not fit.
+                shown(TooltipLines.of(types("axe"), Status.INCOMPATIBLE, UNSHEATHE, false, true)));
+        // With the mark asked for, an item with a skill and no type says so in a normal tooltip too.
         assertEquals(Arrays.asList("UNCLASSIFIED", "SKILL_INCOMPATIBLE " + UNSHEATHE),
-                shown(TooltipLines.of(NO_TYPES, Status.INCOMPATIBLE, UNSHEATHE, false)));
+                shown(TooltipLines.of(NO_TYPES, Status.INCOMPATIBLE, UNSHEATHE, false, true)));
+    }
+
+    @Test
+    void withoutTheMarkAskedForNoItemIsMarkedAsUnclassified() {
+        // Not at a Forge or in advanced tooltips.
+        assertEquals(Collections.emptyList(), shown(TooltipLines.of(NO_TYPES, Status.NONE, null, true, false)));
+        assertEquals(Collections.emptyList(), shown(TooltipLines.of(NO_TYPES, Status.NONE, null, false, false)));
+        // Not on an item that carries a skill; its skill line still says that the skill does not fit.
+        assertEquals(Collections.singletonList("SKILL_INCOMPATIBLE " + UNSHEATHE),
+                shown(TooltipLines.of(NO_TYPES, Status.INCOMPATIBLE, UNSHEATHE, false, false)));
+        assertEquals(Collections.singletonList("SKILL_INCOMPATIBLE " + UNSHEATHE),
+                shown(TooltipLines.of(NO_TYPES, Status.INCOMPATIBLE, UNSHEATHE, true, false)));
+        // An item with a type is shown as before.
+        assertEquals(Arrays.asList("TYPES katana, sword", "SKILL " + UNSHEATHE),
+                shown(TooltipLines.of(types("sword", "katana"), Status.COMPATIBLE, UNSHEATHE, true, false)));
     }
 
     @Test
     void aSkillThatNoModProvidesIsShownByItsId() {
         assertEquals(Arrays.asList("TYPES sword", "SKILL_UNAVAILABLE gone_addon:lost_skill"),
-                shown(TooltipLines.of(types("sword"), Status.UNAVAILABLE, "gone_addon:lost_skill", false)));
+                shown(TooltipLines.of(types("sword"), Status.UNAVAILABLE, "gone_addon:lost_skill", false, true)));
     }
 
     @Test

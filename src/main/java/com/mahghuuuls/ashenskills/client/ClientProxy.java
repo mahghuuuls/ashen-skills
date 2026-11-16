@@ -40,6 +40,7 @@ public class ClientProxy extends CommonProxy {
         SkillIcons.register();
         SkillHud.register();
         ChargeBar.register();
+        RefusalDisplay.register();
         ForgeNotices.register();
         ClientRegistry.bindTileEntitySpecialRenderer(AshenForgeTile.class, new ForgeRenderer());
     }

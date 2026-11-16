@@ -2,6 +2,8 @@ package com.mahghuuuls.ashenskills.client.hud;
 
 import com.mahghuuuls.ashenskills.Tags;
 import com.mahghuuuls.ashenskills.client.gui.ForgeScreen;
+import com.mahghuuuls.ashenskills.config.SettingKey;
+import com.mahghuuuls.ashenskills.config.Settings;
 import com.mahghuuuls.ashenskills.skill.Ash;
 import com.mahghuuuls.ashenskills.skill.AshItem;
 import com.mahghuuuls.ashenskills.weapon.AttachedSkill;
@@ -30,7 +32,8 @@ public final class WeaponTooltip {
         AttachedSkill attached = AttachedSkill.of(stack);
         boolean askedInDetail = event.getFlags().isAdvanced() || Minecraft.getMinecraft().currentScreen instanceof ForgeScreen;
         for (TooltipLines.Line line : TooltipLines.of(
-                WeaponTypes.effectiveTypes(stack), attached.status(), attached.skillId(), askedInDetail)) {
+                WeaponTypes.effectiveTypes(stack), attached.status(), attached.skillId(), askedInDetail,
+                Settings.general().getBoolean(SettingKey.NO_TYPE_TOOLTIP))) {
             event.getToolTip().add("\u00a7" + line.kind.colorCode + I18n.format(line.kind.languageKey(), shown(line)));
         }
     }

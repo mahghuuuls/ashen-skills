@@ -1,5 +1,6 @@
 package com.mahghuuuls.ashenskills.client.hud;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -21,6 +22,16 @@ class RefusalDisplayTest {
         assertFalse(RefusalDisplay.isDue(5_000L, 5_999, 1_000));
         assertTrue(RefusalDisplay.isDue(5_000L, 6_000, 1_000));
         assertTrue(RefusalDisplay.isDue(5_000L, 9_000, 1_000));
+    }
+
+    @Test
+    void theLineFadesOverItsLastSecond() {
+        assertEquals(255, RefusalDisplay.opacity(60));
+        assertEquals(255, RefusalDisplay.opacity(20));
+        assertEquals(128, RefusalDisplay.opacity(10));
+        assertEquals(12, RefusalDisplay.opacity(1));
+        assertEquals(0, RefusalDisplay.opacity(0));
+        assertEquals(0, RefusalDisplay.opacity(-0.5F));
     }
 
     @Test

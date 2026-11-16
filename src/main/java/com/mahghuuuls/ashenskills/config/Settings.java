@@ -17,7 +17,7 @@ public final class Settings {
     private Settings() {
     }
 
-    /** Reads (and creates when missing) the general configuration file and reports invalid values. */
+    /** Reads the general configuration file, reports invalid values, and writes the file again with the current descriptions. */
     public static void load(File configurationFile, Logger logger) {
         defaults = DefaultsData.loadBundled();
         Configuration file = new Configuration(configurationFile);
@@ -34,9 +34,9 @@ public final class Settings {
             Property property = property(file, key, entry);
             raw.put(key, written != null ? written : property.getString());
         }
-        if (file.hasChanged()) {
-            file.save();
-        }
+        // Written again at every start: Forge does not count a new description as a change, and
+        // the descriptions in the file must be those of this version of the mod.
+        file.save();
         general = GeneralSettings.resolve(defaults, raw);
         for (String problem : general.problems()) {
             logger.error("Configuration file {}: {}", configurationFile.getName(), problem);

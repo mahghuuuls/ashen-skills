@@ -9,11 +9,11 @@ import java.util.TreeSet;
 
 /**
  * Which lines the mod adds to an item's tooltip, as facts without wording. An item with a weapon
- * type or a skill always gets its lines, and an item with a skill but no type says that it has no
- * type, because that is why its skill does not fit. An item with neither gets no line, except where
- * a player asks what the mod makes of an item: at an Ashen Forge and in advanced tooltips it is
- * marked as having no weapon type. Each kind of line has its color: the types share the color of a
- * usable skill, and a skill that cannot be used is red.
+ * type or a skill always gets its lines. An item without a weapon type is not marked as such,
+ * unless the player's setting asks for that mark: then an item with a skill but no type says that
+ * it has no type, because that is why its skill does not fit, and so does any item where a player
+ * asks what the mod makes of it, at an Ashen Forge and in advanced tooltips. Each kind of line has
+ * its color: the types share the color of a usable skill, and a skill that cannot be used is red.
  */
 public final class TooltipLines {
 
@@ -62,12 +62,14 @@ public final class TooltipLines {
      * @param skill how the attached skill stands
      * @param skillId the id text of the attached skill, or null
      * @param askedInDetail whether the tooltip is shown at an Ashen Forge or in advanced mode
+     * @param marksNoType whether the player's setting asks for the mark of an item without a weapon type
      */
-    public static List<Line> of(Set<String> types, AttachedSkill.Status skill, String skillId, boolean askedInDetail) {
+    public static List<Line> of(Set<String> types, AttachedSkill.Status skill, String skillId, boolean askedInDetail,
+            boolean marksNoType) {
         List<Line> lines = new ArrayList<>();
         if (!types.isEmpty()) {
             lines.add(new Line(Kind.TYPES, String.join(", ", new TreeSet<>(types))));
-        } else if (skill != AttachedSkill.Status.NONE || askedInDetail) {
+        } else if (marksNoType && (skill != AttachedSkill.Status.NONE || askedInDetail)) {
             lines.add(new Line(Kind.UNCLASSIFIED, ""));
         }
         switch (skill) {

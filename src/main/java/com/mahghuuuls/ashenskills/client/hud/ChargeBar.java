@@ -7,6 +7,7 @@ import com.mahghuuuls.ashenskills.api.SkillPhase;
 import com.mahghuuuls.ashenskills.client.animation.clip.ClipSampler;
 import com.mahghuuuls.ashenskills.client.state.ClientSkillState;
 import com.mahghuuuls.ashenskills.client.state.ClientSkillState.PhaseView;
+import com.mahghuuuls.ashenskills.config.GeneralSettings;
 import com.mahghuuuls.ashenskills.config.SettingKey;
 import com.mahghuuuls.ashenskills.config.Settings;
 import com.mahghuuuls.ashenskills.diagnostics.Diagnostics;
@@ -24,7 +25,8 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
  * The charge bar: under the crosshair while the own player charges a skill, a bar that fills on
  * the way to the full charge, with a marker at the minimum charge and one at the full charge. It
  * shows how long the server said the charge has lasted, carried on by this client's clock between
- * reports; the server alone decides what a release is worth. A player can switch it off.
+ * reports; the server alone decides what a release is worth. A player can switch it off, and can
+ * move and resize it.
  */
 public final class ChargeBar {
 
@@ -62,11 +64,11 @@ public final class ChargeBar {
         PhaseView phase = game.player == null ? null : ownPreparation(game.player.getEntityId());
         ChargeCurve curve = phase == null ? null : curveOf(phase);
         if (curve == null) {
-            logOnce("hidden", "noCharge", 0, 0);
+            logOnce("hidden", "noCharge", 0, 0, null);
             return;
         }
         if (!Settings.general().getBoolean(SettingKey.CHARGE_BAR)) {
-            logOnce("hidden", "switchedOff", 0, 0);
+            logOnce("hidden", "switchedOff", 0, 0, null);
             return;
         }
         double seconds = ClipSampler.secondsIntoPhase(
@@ -77,9 +79,19 @@ public final class ChargeBar {
         int color = curve.isFull(seconds) ? FILL_FULL : curve.reachesMinimum(seconds) ? FILL_CHARGING : FILL_TOO_EARLY;
         int x = (event.getResolution().getScaledWidth() - WIDTH) / 2;
         int y = event.getResolution().getScaledHeight() / 2 + BELOW_CROSSHAIR;
-        draw(x, y, inner, filled, minimumAt, color);
+        // The markers stand out above and below the bar, and stay on the screen with it.
+        GeneralSettings settings = Settings.general();
+        HudPlacement place = HudPlacement.of(event.getResolution().getScaledWidth(), event.getResolution().getScaledHeight(),
+                x, y - MARKER_OVERHANG, WIDTH, HEIGHT + 2 * MARKER_OVERHANG,
+                settings.getInt(SettingKey.CHARGE_BAR_OFFSET_X), settings.getInt(SettingKey.CHARGE_BAR_OFFSET_Y),
+                settings.getDouble(SettingKey.CHARGE_BAR_SCALE));
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(place.x, place.y, 0);
+        GlStateManager.scale(place.scale, place.scale, 1);
+        draw(inner, filled, minimumAt, color);
+        GlStateManager.popMatrix();
         logOnce("shown", curve.isFull(seconds) ? "full" : curve.reachesMinimum(seconds) ? "charging" : "tooEarly",
-                filled, minimumAt);
+                filled, minimumAt, place);
     }
 
     /** The own player's preparation as last reported, or null when the player prepares no skill. */
@@ -97,7 +109,13 @@ public final class ChargeBar {
         return skill == null || skill.activation() != ActivationKind.CHARGED ? null : ChargeCurve.of(skill);
     }
 
-    private static void draw(int x, int y, int inner, int filled, int minimumAt, int fillColor) {
+    /**
+     * Draws the bar with the top of its markers at the origin; the caller has moved and scaled
+     * the origin.
+     */
+    private static void draw(int inner, int filled, int minimumAt, int fillColor) {
+        int x = 0;
+        int y = MARKER_OVERHANG;
         // Each rectangle sets its own blending and switches blending off when it is done.
         Gui.drawRect(x, y, x + WIDTH, y + HEIGHT, BORDER);
         Gui.drawRect(x + 1, y + 1, x + 1 + inner, y + HEIGHT - 1, EMPTY);
@@ -112,16 +130,17 @@ public final class ChargeBar {
     }
 
     /** One line per tenth of the bar and per change of state, not one per frame. */
-    private void logOnce(String state, String reason, int filled, int minimumAt) {
+    private void logOnce(String state, String reason, int filled, int minimumAt, HudPlacement place) {
         if (!Diagnostics.enabled()) {
             return;
         }
         int tenth = filled * 10 / (WIDTH - 2);
-        String now = state + "|" + reason + "|" + tenth;
+        String where = place == null ? "none" : place.describe();
+        String now = state + "|" + reason + "|" + tenth + "|" + where;
         if (!now.equals(lastLogged)) {
             lastLogged = now;
-            Diagnostics.log("CLIENT_CHARGE_BAR", "state={} reason={} filledPixels={} ofPixels={} minimumAtPixel={}",
-                    state, reason, filled, WIDTH - 2, minimumAt);
+            Diagnostics.log("CLIENT_CHARGE_BAR", "state={} reason={} filledPixels={} ofPixels={} minimumAtPixel={} drawnAt={}",
+                    state, reason, filled, WIDTH - 2, minimumAt, where);
         }
     }
 }

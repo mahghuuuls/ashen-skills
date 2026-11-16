@@ -15,6 +15,13 @@
     "skillHud":                 { "default": true, "owner": "client", "source": "brief 10.12" },
     "chargeBar":                { "default": true, "owner": "client", "source": "brief 10.12" },
     "cooldownNumber":           { "default": true, "owner": "client", "source": "brief 10.13" },
+    "skillHudOffsetX":          { "default": 0,    "min": -2000, "max": 2000, "owner": "client", "source": "owner decision 2026-11-13 (campaign B, card F11)" },
+    "skillHudOffsetY":          { "default": 0,    "min": -2000, "max": 2000, "owner": "client", "source": "owner decision 2026-11-13 (campaign B, card F11)" },
+    "skillHudScale":            { "default": 1.0,  "min": 0.5,   "max": 3.0,  "owner": "client", "source": "owner decision 2026-11-13 (campaign B, card F11)" },
+    "chargeBarOffsetX":         { "default": 0,    "min": -2000, "max": 2000, "owner": "client", "source": "owner decision 2026-11-13 (campaign B, card F11)" },
+    "chargeBarOffsetY":         { "default": 0,    "min": -2000, "max": 2000, "owner": "client", "source": "owner decision 2026-11-13 (campaign B, card F11)" },
+    "chargeBarScale":           { "default": 1.0,  "min": 0.5,   "max": 3.0,  "owner": "client", "source": "owner decision 2026-11-13 (campaign B, card F11)" },
+    "noTypeTooltip":            { "default": false, "owner": "client", "source": "owner decision 2026-11-14 (campaign B, card X2)" },
     "maxImpactParticlesPerSkill":{ "default": 100, "min": 0,   "max": 500, "owner": "client", "source": "brief 10.27" },
     "animationCheckControls":   { "default": false,"owner": "client", "source": "proposal (animation check controls)" }
   },

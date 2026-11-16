@@ -77,6 +77,30 @@ class GeneralSettingsTest {
     }
 
     @Test
+    void theHudPlaceAndSizeSettingsKeepTheShippedRanges() {
+        DefaultsData shipped = DefaultsData.loadBundled();
+        Map<SettingKey, String> values = new EnumMap<>(SettingKey.class);
+        values.put(SettingKey.SKILL_HUD_OFFSET_X, "2000");
+        values.put(SettingKey.SKILL_HUD_OFFSET_Y, "-2001");
+        values.put(SettingKey.SKILL_HUD_SCALE, "3.5");
+        values.put(SettingKey.CHARGE_BAR_OFFSET_X, "-2000");
+        values.put(SettingKey.CHARGE_BAR_OFFSET_Y, "1.5");
+        values.put(SettingKey.CHARGE_BAR_SCALE, "0.5");
+        GeneralSettings settings = GeneralSettings.resolve(shipped, values);
+
+        // The ends of a range are allowed.
+        assertEquals(2000, settings.getInt(SettingKey.SKILL_HUD_OFFSET_X));
+        assertEquals(-2000, settings.getInt(SettingKey.CHARGE_BAR_OFFSET_X));
+        assertEquals(0.5, settings.getDouble(SettingKey.CHARGE_BAR_SCALE));
+        // A value past an end, and a fraction for a whole number, give the default and one problem each.
+        assertEquals(0, settings.getInt(SettingKey.SKILL_HUD_OFFSET_Y));
+        assertEquals(1.0, settings.getDouble(SettingKey.SKILL_HUD_SCALE));
+        assertEquals(0, settings.getInt(SettingKey.CHARGE_BAR_OFFSET_Y));
+        assertEquals(3, settings.problems().size());
+        assertFalse(settings.getBoolean(SettingKey.NO_TYPE_TOOLTIP));
+    }
+
+    @Test
     void validValuesAreApplied() {
         assertEquals(9, resolve(SettingKey.FORGE_ASH_SLOTS, "9").getInt(SettingKey.FORGE_ASH_SLOTS));
         assertEquals(5, resolve(SettingKey.FORGE_ASH_SLOTS, " 5 ").getInt(SettingKey.FORGE_ASH_SLOTS));
