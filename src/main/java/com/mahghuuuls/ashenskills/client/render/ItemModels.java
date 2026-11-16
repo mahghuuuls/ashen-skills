@@ -16,9 +16,10 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 
 /**
- * How the mod's items look. Every Ash is the same item, so its icon is chosen from the skill it
+ * How the mod's items look. Every Ash is the same item, so its Ash icon is chosen from the skill it
  * holds: the skill {@code <namespace>:<name>} uses the item model {@code <namespace>:ash_<name>}.
  * An Ash of a skill that was not installed when the game loaded its models shows the unknown icon.
+ * The picture of the skill itself is another picture: {@link SkillIcons}.
  */
 @Mod.EventBusSubscriber(modid = Tags.MOD_ID, value = Side.CLIENT)
 public final class ItemModels {

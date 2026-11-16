@@ -4,6 +4,7 @@ import com.mahghuuuls.ashenskills.Tags;
 import com.mahghuuuls.ashenskills.api.SkillDefinition;
 import com.mahghuuuls.ashenskills.api.SkillNumber;
 import com.mahghuuuls.ashenskills.ashenforge.ForgeContainer;
+import com.mahghuuuls.ashenskills.client.render.SkillIcons;
 import com.mahghuuuls.ashenskills.network.AshenNetwork;
 import com.mahghuuuls.ashenskills.network.ForgeActionMessage;
 import com.mahghuuuls.ashenskills.skill.Ash;
@@ -17,7 +18,6 @@ import java.util.List;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.ClickType;
@@ -226,7 +226,10 @@ public final class ForgeScreen extends GuiContainer {
             } else if (row == hovered) {
                 drawRect(x, y, x + LIST_WIDTH, y + ROW_HEIGHT, HOVERED_ROW_COLOR);
             }
-            drawAsh(skillId, x + 2, y + 2);
+            GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+            SkillIcons.draw(skillId, x + 2, y + 2);
+            // The rest of this screen is drawn without blending.
+            GlStateManager.disableBlend();
             boolean onWeapon = skillId.equals(carried);
             int nameWidth = LIST_WIDTH - 24 - (onWeapon ? MARK_SIZE + 4 : 0);
             fontRenderer.drawString(fontRenderer.trimStringToWidth(AshItem.skillName(skillId), nameWidth), x + 22, y + 6, TEXT_COLOR);
@@ -263,14 +266,6 @@ public final class ForgeScreen extends GuiContainer {
         mc.getTextureManager().bindTexture(WEAPON_VIEW);
         drawTexturedModalRect(guiLeft + ACTION_X, guiTop + y, spriteX, ACTION_SPRITE_Y + state * ACTION_SPRITE_STEP,
                 SWITCH_WIDTH, SWITCH_HEIGHT);
-    }
-
-    private void drawAsh(String skillId, int x, int y) {
-        RenderHelper.enableGUIStandardItemLighting();
-        itemRender.renderItemAndEffectIntoGUI(Ash.of(skillId), x, y);
-        RenderHelper.disableStandardItemLighting();
-        GlStateManager.disableLighting();
-        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     @Override

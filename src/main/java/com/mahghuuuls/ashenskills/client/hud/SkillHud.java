@@ -1,18 +1,16 @@
 package com.mahghuuuls.ashenskills.client.hud;
 
 import com.mahghuuuls.ashenskills.Tags;
+import com.mahghuuuls.ashenskills.client.render.SkillIcons;
 import com.mahghuuuls.ashenskills.client.state.ClientSkillState;
 import com.mahghuuuls.ashenskills.config.SettingKey;
 import com.mahghuuuls.ashenskills.config.Settings;
 import com.mahghuuuls.ashenskills.diagnostics.Diagnostics;
-import com.mahghuuuls.ashenskills.skill.Ash;
 import com.mahghuuuls.ashenskills.weapon.AttachedSkill;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -33,7 +31,7 @@ public final class SkillHud {
     private static final int FRAME_SIZE = 24;
     private static final int SHEET_WIDTH = 72;
     private static final int ICON_INSET = 4;
-    private static final int ICON_SIZE = 16;
+    private static final int ICON_SIZE = SkillIcons.SIZE;
 
     // Where the frame sits: beside the hotbar, past the game's attack indicator.
     private static final int HOTBAR_HALF_WIDTH = 91;
@@ -44,10 +42,6 @@ public final class SkillHud {
 
     private static final int SHADE = 0xA0000000;
     private static final int NUMBER_COLOR = 0xFFFFFF;
-
-    /** The Ash drawn as the icon, kept while the skill stays the same. */
-    private String iconSkillId;
-    private ItemStack icon = ItemStack.EMPTY;
 
     /** What was last written to the diagnostic log, so each change is logged once. */
     private String lastLogged = "";
@@ -87,18 +81,10 @@ public final class SkillHud {
                 ? centerX + HOTBAR_HALF_WIDTH + OFFSET_FROM_HOTBAR
                 : centerX - HOTBAR_HALF_WIDTH - OFFSET_FROM_HOTBAR - FRAME_SIZE;
         int y = event.getResolution().getScaledHeight() - FRAME_SIZE;
-        draw(game, state, iconOf(attached.skillId()), remaining, length, x, y);
+        draw(game, state, attached.skillId(), remaining, length, x, y);
     }
 
-    private ItemStack iconOf(String skillId) {
-        if (!skillId.equals(iconSkillId)) {
-            iconSkillId = skillId;
-            icon = Ash.of(skillId);
-        }
-        return icon;
-    }
-
-    private static void draw(Minecraft game, HudState state, ItemStack icon, long remaining, long length, int x, int y) {
+    private static void draw(Minecraft game, HudState state, String skillId, long remaining, long length, int x, int y) {
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(
@@ -107,12 +93,10 @@ public final class SkillHud {
         game.getTextureManager().bindTexture(FRAMES);
         Gui.drawModalRectWithCustomSizedTexture(x, y, state.frame() * FRAME_SIZE, 0, FRAME_SIZE, FRAME_SIZE, SHEET_WIDTH, FRAME_SIZE);
 
-        RenderHelper.enableGUIStandardItemLighting();
-        game.getRenderItem().renderItemAndEffectIntoGUI(icon, x + ICON_INSET, y + ICON_INSET);
-        RenderHelper.disableStandardItemLighting();
+        SkillIcons.draw(skillId, x + ICON_INSET, y + ICON_INSET);
 
         if (state != HudState.READY) {
-            // The shade and the number lie over the icon, which the game draws nearer to the viewer.
+            // The shade and the number lie over the frame and the icon, whatever depth the hotbar left behind.
             GlStateManager.disableDepth();
             // A skill that cannot be used has its whole icon dimmed; a cooldown uncovers the icon from the bottom up.
             int rows = state == HudState.UNUSABLE ? ICON_SIZE : HudState.rowsCovered(remaining, length, ICON_SIZE);

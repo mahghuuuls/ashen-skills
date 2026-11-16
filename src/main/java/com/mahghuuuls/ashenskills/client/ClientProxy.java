@@ -16,6 +16,7 @@ import com.mahghuuuls.ashenskills.client.input.SkillInputLock;
 import com.mahghuuuls.ashenskills.client.input.SkillKeyHandler;
 import com.mahghuuuls.ashenskills.client.render.FirstPersonSkillRenderer;
 import com.mahghuuuls.ashenskills.client.render.ForgeRenderer;
+import com.mahghuuuls.ashenskills.client.render.SkillIcons;
 import com.mahghuuuls.ashenskills.client.state.ClientSkillState;
 import com.mahghuuuls.ashenskills.client.state.ClientWorldWatch;
 import com.mahghuuuls.ashenskills.client.state.ServerSettings;
@@ -36,6 +37,7 @@ public class ClientProxy extends CommonProxy {
         FirstPersonSkillRenderer.register();
         CameraEffects.register();
         ServerSettings.register();
+        SkillIcons.register();
         SkillHud.register();
         ChargeBar.register();
         ForgeNotices.register();
