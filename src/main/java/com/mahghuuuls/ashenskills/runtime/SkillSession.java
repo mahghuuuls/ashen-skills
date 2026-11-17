@@ -28,6 +28,7 @@ public final class SkillSession {
     private boolean stopOwed;
     private final HitSchedule hitSchedule;
     private final int useId;
+    private boolean attackKept;
 
     /** @param useId tells this use of a skill from every other use while the server runs */
     SkillSession(
@@ -62,6 +63,19 @@ public final class SkillSession {
 
     public SkillPhase phase() {
         return timeline.phase();
+    }
+
+    /** Whether an attack press came during the wind-up of this stance and waits for its end. */
+    boolean isAttackKept() {
+        return attackKept;
+    }
+
+    void keepAttack() {
+        attackKept = true;
+    }
+
+    void dropKeptAttack() {
+        attackKept = false;
     }
 
     public int ticksInPhase() {

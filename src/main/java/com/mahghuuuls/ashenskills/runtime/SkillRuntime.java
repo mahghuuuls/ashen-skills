@@ -193,8 +193,11 @@ public final class SkillRuntime {
      * The attack button was pressed. In a stance this executes the skill, when it can be paid for
      * now; when it cannot, the player is told why and the stance goes on. A stance that something
      * ended in this same tick (a jump, another item) ends here, at no cost, and nothing executes.
+     * A press during the wind-up of the stance is kept: the skill executes at the moment the
+     * wind-up is over, if the stance is still held then.
      *
      * @return null when the skill executed, the reason when the payment failed,
+     *     {@link RefusalReason#NOT_READY_YET} when the press was kept for the end of the wind-up,
      *     {@link RefusalReason#NOT_ALLOWED_NOW} when the stance ended instead, and
      *     {@link RefusalReason#NO_SKILL} when the player holds no stance
      */
@@ -210,7 +213,20 @@ public final class SkillRuntime {
             reportRefusal(player, session.skill().id().toString(), RefusalReason.NOT_ALLOWED_NOW);
             return RefusalReason.NOT_ALLOWED_NOW;
         }
-        RefusalReason unpaid = payAndExecute(player, session.skill(), null, session, "attackPressed");
+        double windUp = session.skill().numberOr(SkillNumber.MIN_PREPARATION, 0);
+        if (!WindUp.isOver(session.ticksInPhase(), windUp)) {
+            session.keepAttack();
+            Diagnostics.log("WIND_UP", "player={} skill={} ticksInStance={} ticksNeeded={} result=kept",
+                    player.getName(), session.skill().id(), session.ticksInPhase(), WindUp.ticks(windUp));
+            return RefusalReason.NOT_READY_YET;
+        }
+        return executeFromStance(player, session, "attackPressed");
+    }
+
+    /** Pays for and executes the skill of a held stance; when it cannot be paid, the player is told and the stance goes on. */
+    private RefusalReason executeFromStance(EntityPlayerMP player, SkillSession session, String cause) {
+        session.dropKeptAttack();
+        RefusalReason unpaid = payAndExecute(player, session.skill(), null, session, cause);
         if (unpaid != null) {
             reportRefusal(player, session.skill().id().toString(), unpaid);
         }
@@ -442,6 +458,14 @@ public final class SkillRuntime {
             return;
         }
         session.timeline().tick();
+        if (session.isAttackKept()
+                && WindUp.isOver(session.ticksInPhase(), session.skill().numberOr(SkillNumber.MIN_PREPARATION, 0))) {
+            Diagnostics.log("WIND_UP", "player={} skill={} ticksInStance={} result=over",
+                    player.getName(), session.skill().id(), session.ticksInPhase());
+            if (executeFromStance(player, session, "windUpOver") == null) {
+                return;
+            }
+        }
         if (session.skill().activation() == ActivationKind.CHARGED) {
             if (ChargeCurve.of(session.skill())
                     .becomesFullAtTick(session.ticksInPhase(), SessionTimeline.TICKS_PER_SECOND)) {

@@ -85,6 +85,18 @@ class PackFilesTest {
     }
 
     @Test
+    void aPackChangesTheWindUpOfAStanceWithinItsRange() {
+        List<String> problems = new ArrayList<>();
+
+        assertEquals(0.0, overriddenUnsheathe("{'minPreparation': 0}", problems).number(SkillNumber.MIN_PREPARATION));
+        assertEquals(1.2, overriddenUnsheathe("{'minPreparation': 1.2}", problems).number(SkillNumber.MIN_PREPARATION));
+        assertEquals(Collections.emptyList(), problems);
+
+        assertEquals(0.5, overriddenUnsheathe("{'minPreparation': 6}", problems).number(SkillNumber.MIN_PREPARATION));
+        assertEquals(1, problems.size(), problems.toString());
+    }
+
+    @Test
     void aFullChargeBelowTheMinimumChargeIsReportedAndBothKeepTheSkillsOwnValues() {
         ResourceLocation id = new ResourceLocation("ashenskills", "crushing_blow");
         Map<ResourceLocation, SkillDefinition> registered = new LinkedHashMap<>();

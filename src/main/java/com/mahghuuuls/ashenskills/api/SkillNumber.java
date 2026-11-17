@@ -29,6 +29,13 @@ public enum SkillNumber {
      * leaves it. Only skills that are not instant have it.
      */
     PREPARATION_STAMINA_REGEN("preparationStaminaRegen", false),
+    /**
+     * The wind-up of a stance: how long, in seconds, the stance must be held before an attack press
+     * executes the skill. A press before that is kept and executes the skill at the moment the
+     * wind-up is over, if the stance is still held. Only stance skills use it; one without it has
+     * no wind-up.
+     */
+    MIN_PREPARATION("minPreparation", false),
     /** The shortest charge, in seconds, that executes when the key is released. Only charged skills have it. */
     MIN_CHARGE("minCharge", false),
     /**

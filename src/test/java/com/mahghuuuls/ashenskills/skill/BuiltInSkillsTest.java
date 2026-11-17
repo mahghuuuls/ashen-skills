@@ -107,6 +107,9 @@ class BuiltInSkillsTest {
 
         assertEquals("ashenskills:unsheathe", unsheathe.id().toString());
         assertEquals(ActivationKind.STANCE, unsheathe.activation());
+        assertEquals(0.5, unsheathe.number(SkillNumber.MIN_PREPARATION));
+        assertEquals(0.0, BuiltInSkills.definitionOf("powerful_slash", DefaultsData.loadBundled())
+                .numberOr(SkillNumber.MIN_PREPARATION, 0.0));
         assertEquals(set("katana"), unsheathe.weaponTypes());
         assertEquals(java.util.Collections.emptyList(), unsheathe.missingValues());
         assertEquals(java.util.Arrays.asList(0.3), unsheathe.hitWindowSeconds());

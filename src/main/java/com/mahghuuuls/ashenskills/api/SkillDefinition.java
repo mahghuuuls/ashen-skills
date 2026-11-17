@@ -87,6 +87,12 @@ public final class SkillDefinition {
         return value;
     }
 
+    /** The value of a number only some skills have, or the fallback when this skill has none. */
+    public double numberOr(SkillNumber key, double fallback) {
+        Double value = numbers.get(key);
+        return value == null ? fallback : value;
+    }
+
     /** @throws IllegalStateException when the skill was built without this rule */
     public boolean flag(SkillFlag key) {
         Boolean value = flags.get(key);

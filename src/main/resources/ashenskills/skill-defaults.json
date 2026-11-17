@@ -33,7 +33,8 @@
     "recovery": [0.1, 3],
     "interruptedRecovery": [0.1, 3],
     "speedFractions": [0, 1],
-    "preparationStaminaRegen": [0, 1]
+    "preparationStaminaRegen": [0, 1],
+    "minPreparation": [0, 5]
   },
   "enchantmentDefaults": {
     "_about": "Default for all four skills; a pack can change it per skill. Owner decision 2026-11-11.",
@@ -79,6 +80,7 @@
       "interruptedRecovery": 0.4,
       "preparationSpeed": 0.5,
       "preparationStaminaRegen": 0.2,
+      "minPreparation": 0.5,
       "preparationCanceledByDamage": true,
       "preparationCanceledByKnockback": true,
       "hitWindows": [ { "at": 0.3 } ],
@@ -86,7 +88,7 @@
       "executionSpeed": 0.0,
       "recoverySpeed": 0.5,
       "knockbackStrength": 0.4,
-      "source": "brief 10.17, 10.18, 10.8, 10.24, 7.9; owner decision 2026-11-16 (campaign C, card C2): dash and wide cut; reach, width, travel, timing, cancel rules, speeds and knockback are proposals"
+      "source": "brief 10.17, 10.18, 10.8, 10.24, 7.9; owner decision 2026-11-16 (campaign C, card C2): dash and wide cut; reach, width, travel, timing, cancel rules, speeds and knockback are proposals; owner decision 2026-11-17 (card U2b): a wind-up of 0.5 s (minPreparation), an early attack press is kept"
     },
     "piercing_lunge": {
       "activation": "instant",

@@ -15,6 +15,8 @@ public enum RefusalReason {
     ON_COOLDOWN(true),
     /** The player's state (riding, in the air, ...) does not allow the skill. */
     NOT_ALLOWED_NOW(true),
+    /** The stance is still in its wind-up. The attack press is kept for the moment it is over. Nothing is shown. */
+    NOT_READY_YET(false),
     /** The skill costs stamina and no stamina mod is installed; the server does not waive that. */
     NO_STAMINA_SYSTEM(true),
     /** The skill costs mana and no mana mod is installed; the server does not waive that. */

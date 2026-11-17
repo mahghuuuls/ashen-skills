@@ -93,7 +93,9 @@ public final class AshenSkillsCommand extends CommandBase {
             EntityPlayerMP player = getPlayer(server, sender, args[1]);
             RefusalReason refusal = runtime.onAttackPressed(player);
             String result = "start player=" + player.getName() + " attackPressed"
-                    + (refusal == null ? " result=EXECUTED" : " result=REFUSED reason=" + refusal);
+                    + (refusal == null ? " result=EXECUTED"
+                            : refusal == RefusalReason.NOT_READY_YET ? " result=KEPT_FOR_WIND_UP"
+                            : " result=REFUSED reason=" + refusal);
             reply(sender, result);
             audit(sender, result);
         } else if ("clear".equals(args[0]) && args.length == 3 && "phase".equals(args[2])) {
