@@ -40,8 +40,8 @@ dependencies {
     runtimeOnly 'com.cleanroommc:osxnarratorblocker:1.0'
 
     // Development-only test tool. Never a compile or shipping dependency.
-    if (file('libs/agenttesttoolkit-1.8.0.jar').exists()) {
-        runtimeOnly rfg.deobf(files('libs/agenttesttoolkit-1.8.0.jar'))
+    if (file('libs/agenttesttoolkit-1.9.0.jar').exists()) {
+        runtimeOnly rfg.deobf(files('libs/agenttesttoolkit-1.9.0.jar'))
     }
     // Critworks 1.1.0, the owner's critical-hit mod: compiled against, never packed into this mod's jar.
     // The development build of the published 1.1.0 (same source commit), kept outside the repository.
