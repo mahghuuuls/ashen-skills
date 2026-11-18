@@ -67,6 +67,13 @@ final class ArchitectureRules {
             if (importedLocal == null) {
                 continue;
             }
+            if (local == null) {
+                // A source file of another mod: the api package is all it may know of this one.
+                if (!inPackage(importedLocal, "api")) {
+                    found.add("another mod may use only the api package but " + packageName + " imports " + imported);
+                }
+                continue;
+            }
             if (inAny(local, LOW_LEVEL_PACKAGES) && inAny(importedLocal, HIGH_LEVEL_PACKAGES)) {
                 found.add(packageName + " must not depend on " + imported);
             }

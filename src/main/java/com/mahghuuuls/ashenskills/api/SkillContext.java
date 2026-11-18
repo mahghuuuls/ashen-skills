@@ -35,9 +35,13 @@ public interface SkillContext {
     /**
      * Strikes every valid target inside the shape once, with the skill's damage. The mod applies
      * its rules: the target cap, walls, PvP and team rules, the damage formula and the skill's
-     * allowed on-hit effects.
+     * allowed on-hit effects. A skill may strike more than once in one hit window, with different
+     * shapes: the target cap then counts over the whole window, and a creature that took damage in
+     * this window is passed over and takes no place under the cap.
      *
      * @return how many targets took damage
+     * @throws IllegalStateException when called outside a hit window, or after the call this
+     *     context was given to has returned
      */
     int hit(HitShape shape);
 }

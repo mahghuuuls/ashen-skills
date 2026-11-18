@@ -8,6 +8,7 @@ import com.mahghuuuls.ashenskills.api.SkillFlag;
 import com.mahghuuuls.ashenskills.api.SkillMotion;
 import com.mahghuuuls.ashenskills.api.SkillNumber;
 import com.mahghuuuls.ashenskills.api.SkillPhase;
+import com.mahghuuuls.ashenskills.combat.SkillDamage;
 import com.mahghuuuls.ashenskills.attribute.SkillAttributes;
 import com.mahghuuuls.ashenskills.config.SettingKey;
 import com.mahghuuuls.ashenskills.config.Settings;
@@ -329,8 +330,15 @@ public final class SkillRuntime {
     /** Asks the skill how it moves its user, now that the direction is fixed. */
     private void beginMotion(EntityPlayerMP player, SkillSession session) {
         SkillBehavior behavior = SkillRegistry.behaviorOf(session.skill().id());
-        SkillMotion motion = behavior == null
-                ? null : behavior.motionAtExecution(new RuntimeSkillContext(player, session, messenger));
+        SkillMotion motion = null;
+        if (behavior != null) {
+            RuntimeSkillContext context = new RuntimeSkillContext(player, session, messenger, null);
+            try {
+                motion = behavior.motionAtExecution(context);
+            } finally {
+                context.end();
+            }
+        }
         if (motion == null) {
             return;
         }
@@ -492,7 +500,13 @@ public final class SkillRuntime {
         while (sessions.get(session.playerId()) == session
                 && session.phase() != SkillPhase.INTERRUPTED_RECOVERY
                 && (window = session.hitSchedule().nextDue(session.timeline().executionTicksElapsed())) >= 0) {
-            behavior.onHitWindow(new RuntimeSkillContext(player, session, messenger), window);
+            RuntimeSkillContext context = new RuntimeSkillContext(
+                    player, session, messenger, new WindowBudget(SkillDamage.targetCapPerWindow()));
+            try {
+                behavior.onHitWindow(context, window);
+            } finally {
+                context.end();
+            }
         }
     }
 

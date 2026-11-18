@@ -20,6 +20,7 @@ import net.minecraft.util.ResourceLocation;
 public final class WeaponTypes {
 
     private static Map<String, Set<String>> typesByItemName = Collections.emptyMap();
+    private static AddedTypes added = new AddedTypes(Collections.<String>emptySet());
     private static WeaponCategorySource categories = WeaponCategorySource.NONE;
     private static TypeRules localRules = TypeRules.NONE;
     private static volatile InForce inForce = new InForce(TypeRules.NONE);
@@ -48,9 +49,24 @@ public final class WeaponTypes {
      * @param weaponCategories another mod's categories
      */
     public static void load(Map<String, Set<String>> builtInByItemName, WeaponCategorySource weaponCategories) {
+        load(builtInByItemName, weaponCategories, Collections.<String>emptySet());
+    }
+
+    /**
+     * @param builtInTypeIds the type ids the mod itself has; other mods add theirs to
+     *     {@link #added()} until the game has loaded
+     */
+    public static void load(
+            Map<String, Set<String>> builtInByItemName, WeaponCategorySource weaponCategories, Set<String> builtInTypeIds) {
+        added = new AddedTypes(builtInTypeIds);
         typesByItemName = builtInByItemName;
         categories = weaponCategories;
         inForce = new InForce(inForce.rules);
+    }
+
+    /** The weapon types and item types other mods add in code. */
+    public static AddedTypes added() {
+        return added;
     }
 
     /** Sets the rules of this installation's own pack files. Called once, when the game has loaded. */
@@ -89,7 +105,9 @@ public final class WeaponTypes {
         if (name == null) {
             return Collections.emptySet();
         }
-        Set<String> builtIn = builtInTypes(typesByItemName.get(name.toString()), categories.typesOf(item));
+        Set<String> builtIn = builtInTypes(
+                builtInTypes(typesByItemName.get(name.toString()), added.typesOf(name.toString())),
+                categories.typesOf(item));
         return rules.effectiveTypes(name.toString(), builtIn);
     }
 

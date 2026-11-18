@@ -10,6 +10,7 @@ import com.mahghuuuls.ashenskills.network.AshenNetwork;
 import com.mahghuuuls.ashenskills.proxy.CommonProxy;
 import com.mahghuuuls.ashenskills.runtime.SkillRuntimeHooks;
 import com.mahghuuuls.ashenskills.skill.BuiltInSkills;
+import com.mahghuuuls.ashenskills.api.AshenSkillsApi;
 import com.mahghuuuls.ashenskills.skill.SkillRegistry;
 import com.mahghuuuls.ashenskills.weapon.WeaponTypes;
 import java.io.File;
@@ -50,11 +51,14 @@ public class AshenSkillsMod {
         AshenNetwork.init();
         SkillAttributes.install();
         IntegrationGate.decide(LOGGER);
-        WeaponTypes.load(Settings.defaults().builtInItemTypes(), IntegrationGate.weaponCategories());
+        WeaponTypes.load(Settings.defaults().builtInItemTypes(), IntegrationGate.weaponCategories(),
+                Settings.defaults().builtInTypeIds());
         SkillDamage.setCritGateway(IntegrationGate.crits());
         SkillRuntimeHooks.install();
         // Before the game loads item models: every Ash icon is chosen from the skills known then.
         BuiltInSkills.registerAll(Settings.defaults());
+        // From here other mods can add skills and weapon types, until the game has loaded.
+        AshenSkillsApi.attach(new ApiHost());
     }
 
     @Mod.EventHandler
@@ -66,6 +70,7 @@ public class AshenSkillsMod {
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event) {
         SkillRegistry.close();
+        WeaponTypes.added().close();
         // Items and skills are complete now, so the pack's files can be checked against them.
         PackConfiguration.load(configurationFolder, LOGGER);
     }

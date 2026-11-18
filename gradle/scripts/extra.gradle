@@ -3,3 +3,26 @@
 
 // If you wish to use the default helper methods, uncomment the line below
 // apply from: 'gradle/scripts/helpers.gradle'
+
+// The test addon: a second mod that uses only the public API. Built for tests, never shipped:
+// it is not part of the mod's jar, and its own jar goes to build/testAddon.
+sourceSets {
+    testAddon {
+        // Sources in src/testAddon/java and src/testAddon/resources, by Gradle's own convention.
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+    }
+}
+
+tasks.register('testAddonJar', Jar) {
+    description = 'Builds the test addon for a development launch.'
+    archiveBaseName = 'ashentestaddon'
+    archiveVersion = '1.0.0'
+    archiveClassifier = 'dev'
+    destinationDirectory = layout.buildDirectory.dir('testAddon')
+    from sourceSets.testAddon.output
+}
+
+// A change of the API that breaks the addon fails the build.
+tasks.named('check') {
+    dependsOn 'testAddonJar'
+}

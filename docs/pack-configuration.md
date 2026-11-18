@@ -28,6 +28,8 @@ Pack configuration: weapon_types.json read (1 type(s), 3 item rule(s), 1 problem
 
 ## Weapon types without a pack
 
+Another mod can add weapon types and give them to items in its code (`docs/addon-api.md`). Such a type exists for the pack files like the mod's own types: `weapon_types.json` and `skills.json` may name it without defining it.
+
 - The five vanilla swords have the type `sword`.
 - With Spartan Weaponry installed, each of its melee weapons has the type of its category: `dagger`, `parrying_dagger`, `longsword`, `katana`, `saber`, `rapier`, `greatsword`, `hammer`, `warhammer`, `spear`, `halberd`, `pike`, `lance`, `battleaxe`, `mace`, `glaive`, `quarterstaff`, `club`, `caestus`, `scythe`. A weapon that another mod builds on one of these categories has the same type.
 - Every other item has no type. A type is never guessed from an item's name or damage.

@@ -3,6 +3,7 @@ package com.mahghuuuls.ashenskills.config;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mahghuuuls.ashenskills.weapon.AddedTypes;
 import com.mahghuuuls.ashenskills.weapon.TypeRules;
 import com.mahghuuuls.ashenskills.weapon.TypeRules.ItemRule;
 import java.util.LinkedHashMap;
@@ -19,7 +20,7 @@ import java.util.regex.Pattern;
  */
 final class TypeRulesFile {
 
-    private static final Pattern TYPE_ID = Pattern.compile("[a-z0-9_.:-]+");
+    private static final Pattern TYPE_ID = AddedTypes.TYPE_ID;
     private static final String TYPES_KEY = "types";
     private static final String ITEMS_KEY = "items";
     private static final String ADD_KEY = "add";

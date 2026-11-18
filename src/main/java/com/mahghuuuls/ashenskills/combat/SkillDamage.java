@@ -62,20 +62,34 @@ public final class SkillDamage {
         void onDamaged(Entity target);
     }
 
+    /** The most targets one hit window may damage, by this installation's settings. */
+    public static int targetCapPerWindow() {
+        return Settings.general().getInt(SettingKey.HIT_TARGET_CAP_PER_WINDOW);
+    }
+
     /**
+     * One strike of a hit window, which may hold several.
+     *
      * @param facingYaw the direction fixed when the skill executed
      * @param chargeBonus the extra share of damage this use earned by charging; 0 for none
      * @param skillDamagePoints the user's Ashen Skill Damage, in percent points
+     * @param cap how many targets the window may still damage; 0 or less strikes nothing
+     * @param struckBefore ids of the creatures the window has damaged already; they are passed over,
+     *     and this strike adds the ones it damages
      * @param listener told about each damaged target
      * @return how many targets took damage
      */
     public static int strike(
             EntityPlayer user, ItemStack weapon, SkillDefinition skill, HitShape shape, float facingYaw,
-            double chargeBonus, double skillDamagePoints, StrikeListener listener) {
-        int cap = Settings.general().getInt(SettingKey.HIT_TARGET_CAP_PER_WINDOW);
+            double chargeBonus, double skillDamagePoints, int cap, java.util.Set<Integer> struckBefore,
+            StrikeListener listener) {
+        if (cap <= 0) {
+            return 0;
+        }
         Area area = new Area(shape, facingYaw,
                 skill.number(SkillNumber.REACH_BELOW), skill.number(SkillNumber.REACH_ABOVE));
-        Selection selection = TargetSelector.select(user, area, cap, skill.flag(SkillFlag.SOLID_BLOCKS_OBSTRUCT));
+        Selection selection = TargetSelector.select(
+                user, area, cap, skill.flag(SkillFlag.SOLID_BLOCKS_OBSTRUCT), struckBefore);
         StringBuilder report = Diagnostics.enabled() ? new StringBuilder() : null;
         int[] damagedCount = {0};
         // One strike is one attack for the critical-hit system: all its targets share one roll.
@@ -84,6 +98,7 @@ public final class SkillDamage {
                 float dealt = damage(user, weapon, skill, target, chargeBonus, skillDamagePoints);
                 if (dealt >= 0) {
                     damagedCount[0]++;
+                    struckBefore.add(TargetSelector.creatureId(target));
                     listener.onDamaged(target);
                 }
                 if (report != null) {

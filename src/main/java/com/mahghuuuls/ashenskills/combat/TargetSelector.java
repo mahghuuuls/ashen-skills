@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.MultiPartEntityPart;
@@ -67,7 +68,12 @@ final class TargetSelector {
     private TargetSelector() {
     }
 
-    static Selection select(EntityPlayer user, Area area, int targetCap, boolean solidBlocksObstruct) {
+    /**
+     * @param struckBefore ids of the creatures this hit window has damaged already: they are passed
+     *     over, and they take no place under the cap
+     */
+    static Selection select(
+            EntityPlayer user, Area area, int targetCap, boolean solidBlocksObstruct, Set<Integer> struckBefore) {
         double reach = area.shape.farthest();
         AxisAlignedBB searchBox = new AxisAlignedBB(
                 user.posX - reach, user.posY - area.reachBelow, user.posZ - reach,
@@ -94,11 +100,20 @@ final class TargetSelector {
                 continue;
             }
             creaturesInShape++;
+            if (struckBefore.contains(creatureId(target))) {
+                continue;
+            }
             if (targets.size() < targetCap && (!solidBlocksObstruct || canReach(user, target))) {
                 targets.add(target);
             }
         }
         return new Selection(counted.size(), creaturesInShape, targets);
+    }
+
+    /** The id of the creature a target belongs to: its own, or for a part of a many-part creature the creature's. */
+    static int creatureId(Entity target) {
+        Entity creature = creatureOf(target);
+        return (creature == null ? target : creature).getEntityId();
     }
 
     private static boolean isInside(EntityPlayer user, Area area, AxisAlignedBB box) {

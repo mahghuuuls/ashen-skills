@@ -1,0 +1,11 @@
+[
+  {
+    "modid": "ashentestaddon",
+    "name": "Ashen Skills Test Addon",
+    "description": "Test only. Adds one weapon type and one skill to Ashen Skills through its API.",
+    "version": "1.0.0",
+    "mcversion": "1.12.2",
+    "authorList": ["Mahghuuuls"],
+    "dependencies": ["ashenskills"]
+  }
+]

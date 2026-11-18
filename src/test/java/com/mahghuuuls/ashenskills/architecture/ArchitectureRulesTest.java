@@ -34,6 +34,22 @@ class ArchitectureRulesTest {
     }
 
     @Test
+    void theTestAddonUsesOnlyTheApiPackage() throws IOException {
+        Path sources = Paths.get("src", "testAddon", "java");
+        assertTrue(Files.isDirectory(sources), "run from the project folder: missing " + sources.toAbsolutePath());
+        assertEquals(Collections.emptyList(), scan(sources));
+    }
+
+    @Test
+    void anotherModMayImportTheApiAndNothingElseOfThisMod() {
+        assertAllowed("com.example.addon", ROOT + ".api.AshenSkillsApi");
+        assertAllowed("com.example.addon", "net.minecraft.item.ItemStack");
+        assertBroken("com.example.addon", ROOT + ".skill.SkillRegistry");
+        assertBroken("com.example.addon", ROOT + ".runtime.SkillRuntime");
+        assertBroken("com.example.addon", ROOT + ".AshenSkillsMod");
+    }
+
+    @Test
     void theScanReportsAForbiddenImportInARealSourceFile(@TempDir Path sources) throws IOException {
         Path weapon = Files.createDirectories(sources.resolve("com/mahghuuuls/ashenskills/weapon"));
         Files.write(weapon.resolve("Broken.java"), Arrays.asList(

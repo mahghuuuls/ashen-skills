@@ -18,11 +18,24 @@ final class RuntimeSkillContext implements SkillContext {
     private final EntityPlayerMP player;
     private final SkillSession session;
     private final SkillMessenger messenger;
+    /** What this call may still damage; null for a call in which a skill must not strike. */
+    private final WindowBudget budget;
+    private boolean over;
 
-    RuntimeSkillContext(EntityPlayerMP player, SkillSession session, SkillMessenger messenger) {
+    /**
+     * @param budget the targets the hit window of this call may damage, or null for a call in which
+     *     a skill must not strike
+     */
+    RuntimeSkillContext(EntityPlayerMP player, SkillSession session, SkillMessenger messenger, WindowBudget budget) {
         this.player = player;
         this.session = session;
         this.messenger = messenger;
+        this.budget = budget;
+    }
+
+    /** The call this context was made for has returned: from now on it strikes nothing. */
+    void end() {
+        over = true;
     }
 
     @Override
@@ -62,6 +75,13 @@ final class RuntimeSkillContext implements SkillContext {
      */
     @Override
     public int hit(HitShape shape) {
+        if (over) {
+            throw new IllegalStateException("A skill context is valid only during the call it was given to; skill "
+                    + session.skill().id() + " kept one and struck later");
+        }
+        if (budget == null) {
+            throw new IllegalStateException("Skill " + session.skill().id() + " must not strike here; strike in a hit window");
+        }
         final int impactParticles = (int) Math.round(session.skill().number(SkillNumber.IMPACT_PARTICLES));
         double yaw = Math.toRadians(session.facingYaw());
         double forward = shape.reach() / 2;
@@ -69,7 +89,7 @@ final class RuntimeSkillContext implements SkillContext {
                 player.posX - Math.sin(yaw) * forward, player.posY + player.height / 2,
                 player.posZ + Math.cos(yaw) * forward);
         return SkillDamage.strike(player, weapon(), session.skill(), shape, session.facingYaw(), session.chargeBonus(),
-                SkillAttributes.points(player, SkillAttributes.SKILL_DAMAGE),
+                SkillAttributes.points(player, SkillAttributes.SKILL_DAMAGE), budget.left(), budget.struck(),
                 new SkillDamage.StrikeListener() {
                     @Override
                     public void onDamaged(Entity target) {

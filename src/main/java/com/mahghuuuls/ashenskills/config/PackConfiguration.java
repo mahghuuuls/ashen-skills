@@ -46,9 +46,12 @@ public final class PackConfiguration {
 
         List<String> typeProblems = new ArrayList<>();
         JsonObject typesFile = read(new File(folder, WEAPON_TYPES_FILE), logger);
+        // The types that exist without the pack: the mod's own and the ones other mods added in code.
+        Set<String> typesBeforePack = new LinkedHashSet<>(defaults.builtInTypeIds());
+        typesBeforePack.addAll(WeaponTypes.added().types());
         TypeRules rules = typesFile == null
                 ? TypeRules.NONE
-                : TypeRulesFile.parse(typesFile, defaults.builtInTypeIds(), new Predicate<String>() {
+                : TypeRulesFile.parse(typesFile, typesBeforePack, new Predicate<String>() {
                     @Override
                     public boolean test(String itemName) {
                         ResourceLocation name = new ResourceLocation(itemName);
@@ -58,7 +61,7 @@ public final class PackConfiguration {
         report(logger, WEAPON_TYPES_FILE, typeProblems);
         WeaponTypes.useLocalRules(rules);
 
-        Set<String> knownTypes = new LinkedHashSet<>(defaults.builtInTypeIds());
+        Set<String> knownTypes = new LinkedHashSet<>(typesBeforePack);
         knownTypes.addAll(rules.packTypes());
         List<String> skillProblems = new ArrayList<>();
         JsonObject skillsFile = read(new File(folder, SKILLS_FILE), logger);
