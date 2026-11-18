@@ -22,6 +22,9 @@ public final class IntegrationGate {
     private static final String SPARTAN_MOD_ID = "spartanweaponry";
     private static final String SPARTAN_CATEGORIES = "com.mahghuuuls.ashenskills.integration.spartan.SpartanCategories";
 
+    private static final String JAFS_MOD_ID = "jafs";
+    private static final String JAFS_FOOD = "com.mahghuuuls.ashenskills.integration.jafs.JafsFoodProperties";
+
     private static ResourceGateway resources;
     private static PreparationRegen preparationRegen;
     private static WeaponCategorySource weaponCategories;
@@ -45,11 +48,15 @@ public final class IntegrationGate {
                 WeaponCategorySource.NONE, logger);
         crits = implementationOr(
                 Loader.isModLoaded(CRITWORKS_MOD_ID), CRITWORKS_CRITS, CritGateway.class, CritGateway.NONE, logger);
-        logger.info("Other mods: stamina={} mana={} spartanWeaponry={} critworks={}",
+        // Nothing asks for the food properties later: the food mod calls them. Only the count is reported.
+        FoodProperties foodProperties = implementationOr(
+                Loader.isModLoaded(JAFS_MOD_ID), JAFS_FOOD, FoodProperties.class, FoodProperties.NONE, logger);
+        logger.info("Other mods: stamina={} mana={} spartanWeaponry={} critworks={} foodProperties={}",
                 stamina == ResourcePool.ABSENT ? "absent" : "present",
                 mana == ResourcePool.ABSENT ? "absent" : "present",
                 weaponCategories == WeaponCategorySource.NONE ? "absent" : "present",
-                crits == CritGateway.NONE ? "absent" : "present");
+                crits == CritGateway.NONE ? "absent" : "present",
+                foodProperties.registered());
     }
 
     public static ResourceGateway resources() {

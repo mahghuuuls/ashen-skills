@@ -98,3 +98,16 @@ The animations of a skill's execution and recovery are stretched to the lengths 
 ## Checking the result
 
 An operator can hold an item and run `/ashenskills inspect`. The answer names the item's weapon types, its skill, and whether the skill fits.
+
+## Food that gives skill attribute points (with JAFS)
+
+With the mod Just Another Food System (JAFS) 1.2.0 or newer installed (with an older JAFS the game stops at start and names the version it needs), a food definition in JAFS's `config/jafs/foods.json` can give points of the four attributes while the food is active. The properties are `ashenskills:skill_damage`, `ashenskills:skill_haste`, `ashenskills:skill_stamina_efficiency` and `ashenskills:skill_mana_efficiency`. Each takes the operation `flat` only: the amount is a number of points, from -100 for skill damage and from -1024 for the others, up to 1024. JAFS sums the points of a player's active foods; the points add to those from items and potions, and they end when the food ends.
+
+A modifier of a food definition looks like this (the rest of a definition is described by JAFS):
+
+```json
+{ "property": "ashenskills:skill_damage", "operation": "flat", "amount": 15 }
+```
+
+Without JAFS these properties do not exist and nothing else changes.
+

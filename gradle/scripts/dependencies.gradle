@@ -54,6 +54,17 @@ dependencies {
     if (System.getenv('ASHEN_WITHOUT_CRITWORKS') == null) {
         runtimeOnly files('libs/critworks-1.1.0-dev.jar')
     }
+    // JAFS 1.2.0, the owner's food mod: compiled against, never packed into this mod's jar.
+    // The development build of 1.2.0 (source commit d7883b1), kept outside the repository.
+    // SHA-256 d65c9d6ca0eb8437b359a81a710ac9e37f238f5f4b44b3f4d40860ca47f728af
+    if (!file('libs/jafs-1.2.0-dev.jar').exists()) {
+        throw new GradleException('Missing libs/jafs-1.2.0-dev.jar: the development jar of JAFS 1.2.0 is needed to compile the JAFS integration.')
+    }
+    compileOnly files('libs/jafs-1.2.0-dev.jar')
+    // In the development game only when a run asks for it.
+    if (System.getenv('ASHEN_WITH_JAFS') != null) {
+        runtimeOnly files('libs/jafs-1.2.0-dev.jar')
+    }
     // JASS 1.2.0 (stamina) and JAWMS 1.5.0 (mana), the owner's mods: compiled against, never packed
     // into this mod's jar. The JAWMS interface names a class of Electroblob's Wizardry, so Wizardry
     // 4.3.19 is needed to compile the one class that calls JAWMS.

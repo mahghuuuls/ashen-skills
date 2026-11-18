@@ -40,6 +40,16 @@ public final class SkillAttributes {
     private SkillAttributes() {
     }
 
+    /** The fewest points this attribute can have. */
+    public static double leastPoints(IAttribute attribute) {
+        return attribute == SKILL_DAMAGE ? LEAST_DAMAGE_POINTS : -MOST_POINTS;
+    }
+
+    /** The most points any of the four attributes can have. */
+    public static double mostPoints() {
+        return MOST_POINTS;
+    }
+
     /** Starts giving the attributes to every player. Called once while the game loads. */
     public static void install() {
         MinecraftForge.EVENT_BUS.register(new SkillAttributes());
