@@ -2,13 +2,13 @@
 
 This page is for mod developers. It describes the API of this version; it may change in a later version.
 
-Another mod can add skills and weapon types to Ashen Skills. It uses only the package `com.mahghuuuls.ashenskills.api`. Everything else in the mod is internal and can change without notice.
+Another mod can add skills and weapon types to Ashen Skills. It uses only the package `com.mahghuuuls.ashenskills.api`. Everything else in the mod is internal and can change without notice. Inside that package, `AshenSkillsApi.attach` and `AshenSkillsApi.Host` are for Ashen Skills itself, not for other mods.
 
 A skill you add obeys every rule of the mod: its costs, the shared cooldown, the checks before it starts, PvP and team rules, target caps, and interruption. It shows in Ashen Forges, tooltips, the skill HUD, the `/ashenskills` commands and the pack files like the mod's own skills. The API gives your code no way to switch these rules off.
 
 ## What you need
 
-- Compile against the Ashen Skills jar. Do not pack it into your jar.
+- Compile against the Ashen Skills jar. Do not pack it into your jar. The mod is not on a Maven repository: put the released jar in your project and add it as a compile-only file dependency. The released jar uses the game's obfuscated names, so add it through your build's deobfuscation step.
 - Declare the dependency in your `@Mod`: `dependencies = "required-after:ashenskills"`.
 - Make your calls in your mod's pre-initialization (`FMLPreInitializationEvent`). The game chooses item pictures right after it, so a skill added later has no Ash icon. When the game has finished loading mods, the sets are closed: a later call throws `IllegalStateException` with a message that says so. A call made before Ashen Skills started throws the same exception with a message that names the dependency line.
 
@@ -21,7 +21,7 @@ All are static methods of `AshenSkillsApi`.
 | `registerSkill(SkillDefinition, SkillBehavior)` | Adds a skill. Fails when the id is taken, a required value is missing, or the behavior is null |
 | `registerWeaponType(String)` | Adds a weapon type id (lower-case letters, digits, `_ . : -`). A type never implies another type |
 | `addItemType(ResourceLocation item, String type)` | Gives an item a type without a pack file. The type must exist |
-| `ash(ResourceLocation skill)` | One Ash of that skill, for a recipe or loot. Allowed at any time; the id is not checked |
+| `ash(ResourceLocation skill)` | One Ash of that skill, for a recipe or loot. Allowed at any time after Ashen Skills has started; the id is not checked |
 
 ## A skill is data and code
 
@@ -32,7 +32,7 @@ All are static methods of `AshenSkillsApi`.
 - `weaponTypes(...)`: the types the skill fits. A weapon needs at least one of them.
 - `allowedStates(...)`: `SkillDefinition.STATE_GROUNDED`, `STATE_AIRBORNE`, `STATE_SWIMMING`.
 - `hitWindows(...)`: when each hit window opens, in seconds from the start of the execution.
-- `number(SkillNumber, value)` and `flag(SkillFlag, value)`: the numbers and yes-or-no rules. Each constant's comment says what it means and whether every skill needs it. `SkillDefinition.missingValues()` names what is still missing; registration refuses an incomplete skill.
+- `number(SkillNumber, value)` and `flag(SkillFlag, value)`: the numbers and yes-or-no rules. Each constant's comment says what it means and whether every skill needs it (source: `src/main/java/com/mahghuuuls/ashenskills/api/`). `SkillDefinition.missingValues()` names what is still missing; registration refuses an incomplete skill.
 
 Packs can change these values in `config/ashenskills/skills.json`, by the same names (`docs/pack-configuration.md`).
 
@@ -84,4 +84,13 @@ A weapon keeps the skill id. Its tooltip shows the id as unavailable, the skill 
 
 ## An example
 
-The repository has a small second mod that does all of this, in `src/testAddon/`. It adds the type `whip`, gives it to the game's lead, and adds the skill `ashentestaddon:lash`. It is built for tests only and is not part of the released jar.
+The repository has a small second mod as an example, in `src/testAddon/`. It adds the type `whip`, gives it to the game's lead, and adds the skill `ashentestaddon:lash`: one instant skill with an arc hit, its texts, Ash picture, skill picture, sounds and clips. It has no stance or charged skill, no motion, and no cut trail.
+
+## Not in this version
+
+- No events or callbacks other than the ones of `SkillBehavior`.
+- No call that reads a player's skill phase or cooldown.
+- Hit shapes are an arc or a line; motion is straight ahead.
+- No client-side hook of its own; pictures, sounds, clips and trails are files.
+
+The example mod is built for tests only and is not part of the released jar.
