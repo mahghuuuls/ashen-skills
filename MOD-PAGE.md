@@ -20,12 +20,18 @@ Without other mods, only the five vanilla swords have a type (sword), so only Po
 
 ## Attributes
 
-Players have these attributes. Any mod that grants attributes by name can grant them, for example [Quality Tools](https://www.curseforge.com/minecraft/mc-mods/quality-tools).
+Players have these attributes:
 
 - **Ashen Skill Damage** (`ashenskills.skillDamage`): more skill damage.
 - **Ashen Skill Haste** (`ashenskills.skillHaste`): shorter cooldown.
 - **Ashen Skill Stamina Efficiency** (`ashenskills.skillStaminaEfficiency`): lower stamina cost.
 - **Ashen Skill Mana Efficiency** (`ashenskills.skillManaEfficiency`): lower mana cost.
+
+Any mod that grants attributes by name can grant them. Examples:
+
+- **[Quality Tools](https://www.curseforge.com/minecraft/mc-mods/quality-tools):** a quality in its configuration file.
+- **[Setworks](https://www.curseforge.com/minecraft/mc-mods/setworks):** a set bonus in a CraftTweaker script.
+- **[Statusworks](https://www.curseforge.com/minecraft/mc-mods/statusworks):** a status in a CraftTweaker script.
 
 ## Optional mods
 
